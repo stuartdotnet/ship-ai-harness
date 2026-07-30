@@ -1,0 +1,43 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <!--
+    The Agent Framework harness is moving fast. Every blog post in the series
+    states the version it was written against, so these are pinned exactly and
+    bumped deliberately, never by a floating range.
+  -->
+  <ItemGroup Label="Agent Framework">
+    <PackageVersion Include="Microsoft.Agents.AI.Harness" Version="1.15.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI" Version="10.6.0" />
+  </ItemGroup>
+
+  <!--
+    Note for the post: Azure.AI.Projects has no chat-client entry point, so a Foundry
+    deployment is reached through AzureOpenAIClient pointed at the project's OpenAI
+    endpoint. Microsoft.Extensions.AI.OpenAI supplies the AsIChatClient() adapter and is
+    version-matched to Microsoft.Extensions.AI above.
+  -->
+  <ItemGroup Label="Model providers">
+    <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.21.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.6.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Hosting">
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Testing">
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+</Project>

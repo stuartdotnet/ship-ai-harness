@@ -1,0 +1,14 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+
+.env
+
+# The harness writes here when FileMemoryProvider is left enabled. See docs/gotchas.md #2.
+agent-file-memory/
+
+TestResults/
+[Cc]overage*/
+*.received.*

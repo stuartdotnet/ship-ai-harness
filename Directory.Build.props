@@ -1,0 +1,23 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <!--
+    Parts of the harness are marked [Experimental], which is a compile *error* by default,
+    not a warning. Acknowledge the specific ones this repo relies on rather than blanket-
+    suppressing, so a new experimental API still stops the build and gets a decision.
+
+    MAAI001 - HarnessAgentOptions.MaxContextWindowTokens / MaxOutputTokens (compaction)
+  -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);MAAI001</NoWarn>
+  </PropertyGroup>
+
+</Project>

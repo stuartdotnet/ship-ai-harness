@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ShipAI.Agent/ShipAI.Agent.csproj" />
+    <Project Path="src/ShipAI.Console/ShipAI.Console.csproj" />
+    <Project Path="src/ShipAI.Simulation/ShipAI.Simulation.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ShipAI.Agent.Tests/ShipAI.Agent.Tests.csproj" />
+    <Project Path="tests/ShipAI.Simulation.Tests/ShipAI.Simulation.Tests.csproj" />
+  </Folder>
+</Solution>

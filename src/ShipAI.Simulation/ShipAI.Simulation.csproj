@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Design decision 2: this project references nothing but the BCL.
+    No Agent Framework, no Microsoft.Extensions.AI, no NuGet packages at all.
+    If a PackageReference ever appears here, the layering has been broken.
+  -->
+
+  <ItemGroup>
+    <EmbeddedResource Include="Scenarios\*.json" />
+  </ItemGroup>
+
+</Project>

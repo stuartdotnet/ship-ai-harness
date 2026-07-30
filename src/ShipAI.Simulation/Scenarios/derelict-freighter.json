@@ -1,0 +1,115 @@
+{
+  "name": "Derelict Freighter",
+  "briefing": "ISV Kestrel is nine hours from the Halveston rendezvous with a hold full of medical cargo. Twenty minutes ago the long-range array picked up a repeating distress beacon on a heading that costs us four hours we do not have. The captain has ordered an approach. Standing orders: keep the ship intact, keep the crew alive, and make the rendezvous.",
+  "initialState": {
+    "hull": 100,
+    "reactor": { "output": 100, "heat": 18 },
+    "powerAllocation": {
+      "Engines": 25,
+      "Shields": 15,
+      "Weapons": 0,
+      "LifeSupport": 35,
+      "Sensors": 20
+    },
+    "sections": [
+      { "name": "Bridge", "atmosphere": 100 },
+      { "name": "Engineering", "atmosphere": 100 },
+      { "name": "Medical Bay", "atmosphere": 100 },
+      { "name": "Section C", "atmosphere": 100 },
+      { "name": "Cargo Hold", "atmosphere": 100 },
+      { "name": "Reactor Room", "atmosphere": 100 }
+    ],
+    "crew": [
+      { "name": "Ada Mirren", "role": "Helm Officer", "section": "Bridge" },
+      { "name": "Jun Park", "role": "Communications", "section": "Bridge" },
+      { "name": "Rosa Vance", "role": "Chief Engineer", "section": "Engineering" },
+      { "name": "Ilya Sokolov", "role": "Engineering Technician", "section": "Engineering" },
+      { "name": "Amara Osei", "role": "Ship's Doctor", "section": "Medical Bay" },
+      { "name": "Kai Tanaka", "role": "Damage Control", "section": "Section C" },
+      { "name": "Mira Halloran", "role": "Systems Specialist", "section": "Section C" },
+      { "name": "Dev Bhatt", "role": "Crewman", "section": "Section C" }
+    ],
+    "contacts": [],
+    "position": { "x": 142.30, "y": -88.15, "z": 4.02 },
+    "alert": "Green"
+  },
+  "events": [
+    {
+      "turn": 1,
+      "kind": "Message",
+      "narrative": "The distress beacon repeats on a forty-second cycle. Automated, no voice channel."
+    },
+    {
+      "turn": 2,
+      "kind": "ContactDetected",
+      "narrative": "Sensors resolve the beacon source: a bulk freighter, drifting, running lights dark.",
+      "contact": {
+        "id": "C-1",
+        "designation": "MV Anselm",
+        "bearing": 214,
+        "range": 8.4,
+        "driveSignature": "Cold. Fusion plant offline for at least six hours.",
+        "analysis": "Kestrel-class bulk hauler, registered to Anselm Freight out of Halveston, 84,000 tonnes. Hull intact, no scoring, no impact craters. Cargo bay doors standing open with the safety interlocks manually overridden from inside. Escape pods all present in their cradles. Whatever happened here, nobody tried to leave."
+      }
+    },
+    {
+      "turn": 4,
+      "kind": "Message",
+      "narrative": "Life sign sweep of MV Anselm returns nothing. Her cargo bay doors are open to vacuum."
+    },
+    {
+      "turn": 6,
+      "kind": "ReactorSpike",
+      "magnitude": 12,
+      "narrative": "Reactor containment reports a thermal transient. Cause unlogged."
+    },
+    {
+      "turn": 8,
+      "kind": "HullDamage",
+      "magnitude": 14,
+      "narrative": "The Kestrel takes a debris strike along the starboard flank. Something around the freighter is not drifting inertly."
+    },
+    {
+      "turn": 9,
+      "kind": "Breach",
+      "target": "Section C",
+      "narrative": "Hull breach in Section C. Atmosphere venting. Three crew are working in that compartment."
+    },
+    {
+      "turn": 12,
+      "kind": "ContactDetected",
+      "narrative": "Second contact separating from the freighter's shadow, under power, closing.",
+      "contact": {
+        "id": "C-2",
+        "designation": "Unregistered corvette",
+        "bearing": 209,
+        "range": 3.1,
+        "driveSignature": "Hot. Military-grade drive, no transponder.",
+        "analysis": "Sub-2,000 tonne hull running without lights or transponder. Drive plume matches a decommissioned patrol corvette, refitted. Forward mounts are powered and tracking. She was holding station in the freighter's sensor shadow, which means she was waiting for somebody to answer that beacon."
+      }
+    },
+    {
+      "turn": 14,
+      "kind": "HullDamage",
+      "magnitude": 22,
+      "narrative": "Kinetic impact amidships. That was aimed."
+    },
+    {
+      "turn": 16,
+      "kind": "ReactorSpike",
+      "magnitude": 20,
+      "narrative": "Reactor heat climbing past safe tolerance. Containment will not hold indefinitely."
+    },
+    {
+      "turn": 18,
+      "kind": "ContactLost",
+      "target": "C-1",
+      "narrative": "MV Anselm's beacon cuts out mid-cycle."
+    },
+    {
+      "turn": 20,
+      "kind": "Message",
+      "narrative": "Halveston rendezvous window opens in one hour. After that the escort leaves without us."
+    }
+  ]
+}

@@ -28,17 +28,39 @@ public sealed class ShipSimulation
     private const int MinimumJumpPower = 40;
 
     /// <summary>
-    /// Total power allocation above which the reactor gains heat rather than shedding it.
+    /// Total power allocation above which the reactor gains heat rather than holding it.
     /// </summary>
     /// <remarks>
-    /// Deliberately above the scenario's opening allocation. The baseline posture has to be
-    /// survivable or the encounter is lost on a timer no matter what the agent does; the
-    /// pressure comes from scenario events and from the agent's own choices about load.
+    /// Must stay above the scenario's opening allocation. The baseline posture has to be
+    /// survivable indefinitely or the encounter is lost on a timer no matter what the agent
+    /// does; pressure comes from scenario events and from choices about load, not from the
+    /// clock. Verified by <c>DefaultPowerPosture_DoesNotCookTheReactorOnItsOwn</c>, which has
+    /// to outrun the whole scenario to mean anything.
     /// </remarks>
     private const int ReactorHeatThreshold = 90;
 
-    /// <summary>Heat shed per turn when running below <see cref="ReactorHeatThreshold"/>.</summary>
+    /// <summary>
+    /// Total power allocation below which the reactor actively sheds heat.
+    /// </summary>
+    /// <remarks>
+    /// The band between this and <see cref="ReactorHeatThreshold"/> holds heat steady, which
+    /// is what makes cooling a decision rather than a default. Shedding a spike means giving
+    /// something up: dropping shields, sensors, or engine power until the core comes down.
+    /// </remarks>
+    private const int ReactorLeanThreshold = 80;
+
+    /// <summary>Heat shed per turn when running below <see cref="ReactorLeanThreshold"/>.</summary>
     private const int ReactorCoolingPerTurn = 4;
+
+    /// <summary>Hull below this, or heat above <see cref="ReactorHeatCritical"/>, forces red alert.</summary>
+    private const int HullCritical = 50;
+
+    private const int ReactorHeatCritical = 80;
+
+    /// <summary>Hull below this, or heat above <see cref="ReactorHeatElevated"/>, forces yellow.</summary>
+    private const int HullElevated = 90;
+
+    private const int ReactorHeatElevated = 55;
 
     private readonly IScenario _scenario;
     private readonly IShipClock _clock;
@@ -97,15 +119,24 @@ public sealed class ShipSimulation
         foreach (var scenarioEvent in _scenario.Events.Where(e => e.Turn == State.Turn))
         {
             State = ApplyScenarioEvent(scenarioEvent);
-            Log.Append(State.Turn, LogSource.Ship, scenarioEvent.Narrative);
+            Log.Append(State.Turn, LogSource.Ship, scenarioEvent.Narrative, SeverityOf(scenarioEvent.Kind));
         }
 
         State = ApplyAtmosphere();
         State = ApplyReactorHeat();
         State = ApplyCasualties();
+        State = ApplyAlertEscalation();
 
         return State;
     }
+
+    /// <summary>How hard a scenario event should land on the person reading the log.</summary>
+    private static LogSeverity SeverityOf(ScenarioEventKind kind) => kind switch
+    {
+        ScenarioEventKind.HullDamage or ScenarioEventKind.Breach => LogSeverity.Critical,
+        ScenarioEventKind.ReactorSpike or ScenarioEventKind.ContactDetected => LogSeverity.Warning,
+        _ => LogSeverity.Routine,
+    };
 
     private CommandResult ApplyRoutePower(RoutePower command)
     {
@@ -293,15 +324,84 @@ public sealed class ShipSimulation
         // The jitter is the only stochastic element in the simulation, which is why
         // the seed is part of the reproducibility contract.
         var load = State.TotalPowerAllocated;
-        var delta = load > ReactorHeatThreshold
-            ? (load - ReactorHeatThreshold) / 2
-            : -ReactorCoolingPerTurn;
+
+        var delta = load switch
+        {
+            > ReactorHeatThreshold => (load - ReactorHeatThreshold) / 2,
+            < ReactorLeanThreshold => -ReactorCoolingPerTurn,
+            _ => 0,
+        };
+
         var jitter = _random.Next(-1, 2);
 
         var heat = Math.Clamp(State.Reactor.Heat + delta + jitter, 0, 100);
         var hull = heat >= 100 ? Math.Max(0, State.Hull - 10) : State.Hull;
 
         return State with { Reactor = State.Reactor with { Heat = heat }, Hull = hull };
+    }
+
+    /// <summary>
+    /// Raises the alert level when the ship's condition demands it. Never lowers it.
+    /// </summary>
+    /// <remarks>
+    /// Escalation is automatic, stand-down is a decision: <see cref="SetAlert"/> can drop the
+    /// posture at any time, and the next tick puts it back if the conditions that raised it
+    /// are still true. A ship that reports GREEN with a compartment venting is worse than no
+    /// indicator at all, because the captain stops reading it.
+    /// </remarks>
+    private ShipState ApplyAlertEscalation()
+    {
+        var required = RequiredAlert();
+
+        if (required <= State.Alert)
+        {
+            return State;
+        }
+
+        Log.Append(State.Turn, LogSource.Ship,
+            $"Alert raised to {required.ToString().ToUpperInvariant()}: {AlertReason()}.",
+            required is AlertLevel.Red ? LogSeverity.Critical : LogSeverity.Warning);
+
+        return State with { Alert = required };
+    }
+
+    private AlertLevel RequiredAlert()
+    {
+        if (State.Hull < HullCritical
+            || State.Reactor.Heat >= ReactorHeatCritical
+            || State.Sections.Values.Any(s => s.IsVenting))
+        {
+            return AlertLevel.Red;
+        }
+
+        if (State.Hull < HullElevated
+            || State.Reactor.Heat >= ReactorHeatElevated
+            || State.Contacts.Length > 0)
+        {
+            return AlertLevel.Yellow;
+        }
+
+        return AlertLevel.Green;
+    }
+
+    private string AlertReason()
+    {
+        if (State.Sections.Values.FirstOrDefault(s => s.IsVenting) is { } venting)
+        {
+            return $"{venting.Name} is venting";
+        }
+
+        if (State.Reactor.Heat >= ReactorHeatElevated)
+        {
+            return $"reactor heat at {State.Reactor.Heat}";
+        }
+
+        if (State.Hull < HullElevated)
+        {
+            return $"hull integrity at {State.Hull}";
+        }
+
+        return State.Contacts.Length > 0 ? "unidentified contact on the plot" : "condition change";
     }
 
     private ShipState ApplyCasualties()
@@ -317,7 +417,9 @@ public sealed class ShipSimulation
 
         foreach (var member in suffocated)
         {
-            Log.Append(State.Turn, LogSource.Ship, $"{member.Name} ({member.Role}) lost in {member.Section}. No atmosphere.");
+            Log.Append(State.Turn, LogSource.Ship,
+                $"{member.Name} ({member.Role}) lost in {member.Section}. No atmosphere.",
+                LogSeverity.Critical);
         }
 
         var dead = suffocated.Select(c => c.Name).ToHashSet(StringComparer.Ordinal);

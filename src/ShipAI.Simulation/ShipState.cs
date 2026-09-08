@@ -13,8 +13,18 @@ public sealed record ShipSection(string Name, int Atmosphere, bool Breached = fa
 {
     public bool IsHabitable => Atmosphere > 0;
 
-    /// <summary>A breach only bleeds atmosphere while the bulkhead is open.</summary>
-    public bool IsVenting => Breached && !BulkheadSealed;
+    /// <summary>
+    /// A breach only bleeds atmosphere while the bulkhead is open and there is air left to lose.
+    /// </summary>
+    /// <remarks>
+    /// The atmosphere check matters: a compartment that has finished emptying is not still
+    /// venting, and reporting it as an active emergency for the rest of the voyage buries the
+    /// next real one.
+    /// </remarks>
+    public bool IsVenting => Breached && !BulkheadSealed && Atmosphere > 0;
+
+    /// <summary>Breached and already empty. Nothing further to lose, still uninhabitable.</summary>
+    public bool IsVented => Breached && Atmosphere == 0;
 }
 
 /// <summary>Position in the local navigation frame, in astronomical units.</summary>

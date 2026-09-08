@@ -80,6 +80,69 @@ public class ShipSimulationTests
     }
 
     [Fact]
+    public void Alert_EscalatesWhenASectionVents()
+    {
+        var sim = CreateSimulation();
+
+        // The scenario breaches Section C on turn 9. Before that the plot is quiet enough
+        // that nothing should have forced a red posture.
+        while (sim.State.Turn < 8)
+        {
+            sim.Tick();
+        }
+
+        Assert.NotEqual(AlertLevel.Red, sim.State.Alert);
+
+        sim.Tick();
+
+        Assert.Equal(AlertLevel.Red, sim.State.Alert);
+        Assert.Contains(sim.Log.Entries, e => e.Source == LogSource.Ship && e.Message.Contains("Alert raised to RED"));
+    }
+
+    [Fact]
+    public void Log_RecordsSeverityRatherThanLeavingTheHostToInferIt()
+    {
+        var sim = CreateSimulation();
+
+        // Turn 8 is the debris strike, turn 9 breaches Section C and forces a red posture.
+        while (sim.State.Turn < 9)
+        {
+            sim.Tick();
+        }
+
+        var critical = sim.Log.Entries.Where(e => e.Severity == LogSeverity.Critical).ToList();
+
+        Assert.Contains(critical, e => e.Message.Contains("debris strike"));
+        Assert.Contains(critical, e => e.Message.Contains("Alert raised to RED"));
+
+        // Pure narration stays quiet, or the badge means nothing.
+        Assert.Contains(sim.Log.Entries,
+            e => e.Severity == LogSeverity.Routine && e.Message.Contains("forty-second cycle"));
+    }
+
+    [Fact]
+    public void Alert_ReturnsAfterAStandDownTheConditionsDoNotSupport()
+    {
+        var sim = CreateSimulation();
+
+        while (sim.State.Turn < 9)
+        {
+            sim.Tick();
+        }
+
+        Assert.Equal(AlertLevel.Red, sim.State.Alert);
+
+        // Standing down is the captain's call, but the ship puts it straight back while a
+        // compartment is still venting. Escalation is automatic; only stand-down is a decision.
+        sim.Apply(new SetAlert(AlertLevel.Green));
+        Assert.Equal(AlertLevel.Green, sim.State.Alert);
+
+        sim.Tick();
+
+        Assert.Equal(AlertLevel.Red, sim.State.Alert);
+    }
+
+    [Fact]
     public void SealingBulkhead_NamesTheCrewSealedInside()
     {
         var sim = CreateSimulation();

@@ -21,11 +21,43 @@ public class SensorToolsTests
     }
 
     [Fact]
+    public void ToolNames_MatchesWhatIsActuallyExposedToTheModel()
+    {
+        // The console uses ToolNames to tell ship systems apart from the harness's own tools in
+        // the transcript. Drift between the two lists silently relabels a real ship action as
+        // framework plumbing, which is exactly the confusion the split exists to remove.
+        var (_, tools) = Create();
+
+        var exposed = tools.AsAIFunctions().Select(f => f.Name).ToHashSet();
+
+        Assert.Equal(exposed, SensorTools.ToolNames.ToHashSet());
+    }
+
+    [Fact]
     public void ScanSector_ReportsAClearSectorBeforeAnyContactAppears()
     {
         var (_, tools) = Create();
 
         Assert.Contains("No contacts", tools.ScanSector());
+    }
+
+    [Fact]
+    public void Readings_AreStampedWithTheTurnTheyWereTakenOn()
+    {
+        // Without the stamp, a sweep result is a bare sentence that stays in the conversation
+        // for the rest of the voyage and reads as current on every later turn. Observed: the
+        // agent swept an empty sector on turn 0 and was still reporting "no vessel detected"
+        // on turn 3 with the freighter on the captain's panel.
+        var (simulation, tools) = Create();
+
+        Assert.StartsWith("[T000]", tools.ScanSector());
+
+        AdvanceTo(simulation, 4);
+
+        Assert.StartsWith("[T004]", tools.ScanSector());
+        Assert.StartsWith("[T004]", tools.AnalyseContact("C-1"));
+        Assert.StartsWith("[T004]", tools.QueryCrewManifest());
+        Assert.StartsWith("[T004]", tools.AnalyseContact("C-99"));
     }
 
     [Fact]

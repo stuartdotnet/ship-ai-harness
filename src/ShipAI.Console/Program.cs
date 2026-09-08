@@ -2,6 +2,7 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using ShipAI.Agent;
+using ShipAI.Agent.Tools;
 using ShipAI.ConsoleHost;
 using ShipAI.ConsoleHost.Rendering;
 using ShipAI.Simulation;
@@ -42,11 +43,17 @@ using (chatClient)
     var session = await aurora.CreateSessionAsync();
 
     ShipConsole.Banner(scenario.Name, scenario.Briefing);
-    ShipConsole.StatusBar(simulation.State);
+    ShipConsole.StatusPanel(simulation.State);
+
+    // AURORA speaks first. Prime the agent with the captain's arrival so it opens the
+    // exchange rather than waiting mutely at an empty prompt. This is a stage direction,
+    // not a captain order: it is neither logged nor ticked, so the first real order still
+    // lands at T000.
+    await RunAuroraTurnAsync("Captain on the bridge. Awaiting orders.");
 
     while (true)
     {
-        var input = ShipConsole.Prompt();
+        var input = ShipConsole.Prompt(simulation.State);
 
         if (input is null || input.Trim() is "/quit" or "/exit")
         {
@@ -65,7 +72,7 @@ using (chatClient)
             switch (order)
             {
                 case "/status":
-                    ShipConsole.StatusBar(simulation.State);
+                    ShipConsole.StatusPanel(simulation.State);
                     break;
                 case "/log":
                     ShipConsole.Log(simulation.Log, entries: 20);
@@ -83,6 +90,38 @@ using (chatClient)
 
         simulation.Log.Append(simulation.State.Turn, LogSource.Captain, order);
 
+        if (!await RunAuroraTurnAsync(order))
+        {
+            continue;
+        }
+
+        // Design decision 1: one tick per completed agent turn.
+        //
+        // It lives here in milestone 1 because there is no context provider yet, which makes
+        // the clock the console host's problem. Milestone 2 moves this line into
+        // ShipStateProvider.StoreAIContextAsync, where it belongs: advancing the world is an
+        // ambient concern of the agent turn, not of whichever UI happens to be attached.
+        // Mark the log, tick, then narrate whatever the tick wrote. Scenario events announce
+        // themselves to the captain this way and to AURORA not at all: it can reach the same
+        // entries through ReadShipLog, but only by choosing to spend a tool call on them.
+        var logMark = simulation.Log.Count;
+
+        simulation.Tick();
+
+        ShipConsole.Events(simulation.Log.Since(logMark));
+        ShipConsole.StatusPanel(simulation.State);
+
+        if (simulation.IsLost)
+        {
+            ShipConsole.Error("ISV Kestrel is lost. Voyage over.");
+            break;
+        }
+    }
+
+    // One agent turn, streamed to the bridge. Returns false if AURORA faulted, so the caller
+    // can skip the tick and status refresh that only make sense after a completed turn.
+    async Task<bool> RunAuroraTurnAsync(string order)
+    {
         try
         {
             ShipConsole.BeginAurora();
@@ -91,12 +130,12 @@ using (chatClient)
             {
                 foreach (var call in update.Contents.OfType<FunctionCallContent>())
                 {
-                    ShipConsole.ToolCall(call.Name);
+                    ShipConsole.ToolCall(call.Name, SensorTools.ToolNames.Contains(call.Name));
                 }
 
                 if (update.Text is { Length: > 0 } text)
                 {
-                    SysConsole.Write(text);
+                    ShipConsole.Aurora(text);
                 }
             }
         }
@@ -104,26 +143,11 @@ using (chatClient)
         {
             ShipConsole.EndAurora();
             ShipConsole.Error($"AURORA fault: {ex.Message}");
-            continue;
+            return false;
         }
 
         ShipConsole.EndAurora();
-
-        // Design decision 1: one tick per completed agent turn.
-        //
-        // It lives here in milestone 1 because there is no context provider yet, which makes
-        // the clock the console host's problem. Milestone 2 moves this line into
-        // ShipStateProvider.StoreAIContextAsync, where it belongs: advancing the world is an
-        // ambient concern of the agent turn, not of whichever UI happens to be attached.
-        simulation.Tick();
-
-        ShipConsole.StatusBar(simulation.State);
-
-        if (simulation.IsLost)
-        {
-            ShipConsole.Error("ISV Kestrel is lost. Voyage over.");
-            break;
-        }
+        return true;
     }
 }
 

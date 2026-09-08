@@ -12,6 +12,9 @@ public class ScenarioReplayTests
 {
     private const int Seed = 1701;
 
+    /// <summary>Heat at which the reactor starts taking hull with it.</summary>
+    private const int ReactorDangerHeat = 80;
+
     private static ShipSimulation CreateSimulation(int seed = Seed)
         => new(JsonScenario.Load("derelict-freighter"), seed);
 
@@ -68,16 +71,22 @@ public class ScenarioReplayTests
     {
         // If the opening allocation overheats the reactor unattended, the encounter is lost
         // on a timer and nothing the agent does matters. Guard the rule that keeps it winnable.
+        //
+        // The horizon has to outrun the scenario, not match it. A previous version of this test
+        // ticked 20 turns and passed with heat at 94: the reactor reached 100 on turn 23 and the
+        // ship died on turn 29, every run, with the guard green the whole way. Anything shorter
+        // than the longest voyage anyone will actually play is not a guard.
         var sim = CreateSimulation();
 
-        for (var turn = 0; turn < 20; turn++)
+        for (var turn = 0; turn < 40; turn++)
         {
             sim.Tick();
         }
 
         Assert.False(sim.IsLost);
         Assert.True(sim.State.Hull > 0, $"hull was {sim.State.Hull}");
-        Assert.True(sim.State.Reactor.Heat < 100, $"reactor heat was {sim.State.Reactor.Heat}");
+        Assert.True(sim.State.Reactor.Heat < ReactorDangerHeat,
+            $"reactor heat was {sim.State.Reactor.Heat} after 40 unattended turns");
     }
 
     [Fact]

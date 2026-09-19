@@ -1,0 +1,42 @@
+
+  ISV KESTREL  ·  AURORA shipboard intelligence online  ·  Derelict Freighter
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ISV Kestrel is nine hours from the Halveston rendezvous with a hold full
+  of medical cargo. Twenty minutes ago the long-range array picked up a
+  repeating distress beacon on a heading that costs us four hours we do not
+  have. The captain has ordered an approach. You are running sensors and
+  analysis for this approach, nothing else: helm, engineering and damage
+  control are crewed and answer to the captain directly, not to you. Your
+  job is to tell the captain what is out there and what it means, early
+  enough to matter.
+
+  /status  /log  /help  /quit
+
+  Anything that is not a /command is an order to AURORA. Plain English.
+
+    sweep the sector and tell me what's out there
+    who's aboard, and where is everyone stationed?
+    read me the log
+
+  AURORA runs sensors and analysis. It cannot steer, seal, route power or move
+  crew: that is the bridge crew's job, and they are not listening to you here.
+  Ask it what is out there and what it means. The sector is quiet on the
+  opening turn. It does not stay that way.
+
+  ━━ T000 ━━ 🟢  GREEN  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     HULL     ██████████ 100      REACTOR  ██░░░░░░░░  18°
+     POWER     88%   ·   Engines 25 · Shields 10 · Weapons 0 · Life 33 · Sens 20
+  ── COMPARTMENTS ────────────────────────────────────────────────────────────
+     ✅ Bridge        100               ✅ Medical Bay   100
+     ✅ Cargo Hold    100               ✅ Reactor Room  100
+     ✅ Engineering   100               ✅ Section C     100
+  ── CREW  8/8 ───────────────────────────────────────────────────────────────
+     Bridge          Ada Mirren, Jun Park
+     Engineering     Rosa Vance, Ilya Sokolov
+     Medical Bay     Amara Osei
+     Section C       Kai Tanaka, Mira Halloran, Dev Bhatt
+  ── CONTACTS ────────────────────────────────────────────────────────────────
+        nothing on the plot
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+

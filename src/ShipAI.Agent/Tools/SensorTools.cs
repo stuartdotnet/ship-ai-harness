@@ -17,10 +17,17 @@ namespace ShipAI.Agent.Tools;
 /// not because it happens to be a "sensor" tool.
 /// </para>
 /// <para>
-/// There is deliberately no <c>GetShipStatus</c> here. Hull, reactor, power, and section
-/// integrity are ambient facts the ship already knows about itself, and milestone 2 injects
-/// them through an <c>AIContextProvider</c> instead. Making the agent spend a tool call to
-/// learn its own condition is the mistake that post 2 exists to demonstrate.
+/// There is deliberately no <c>GetShipStatus</c> here, for a narrower reason than "status is
+/// state": you cannot look up what you do not know to ask about. Not knowing the hull is
+/// failing is exactly the state in which the agent does not think to check the hull.
+/// </para>
+/// <para>
+/// Milestone 2 injects a summary through an <c>AIContextProvider</c> — condition, occupancy
+/// and contact counts, and the turn the plot was last swept on — and these four tools stay
+/// behind a call because they supply identity and detail the summary deliberately omits. The
+/// summary is what makes the call worth making: <c>ScanSector</c> is only worth a second call
+/// once something says the plot is three turns old, and nobody asks who is in Section C until
+/// something says Section C is breached. See docs/architecture.md.
 /// </para>
 /// </remarks>
 public sealed class SensorTools(ShipSimulation simulation)

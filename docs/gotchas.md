@@ -299,7 +299,16 @@ asking a model to be suspicious of its own memory on a schedule is asking it to 
 has no clock for.
 
 **Do:** stamp the readings anyway, because a stale answer that is visibly stale is better than
-one that is silently wrong. Then accept that this is not the fix. Ambient state that changes on
-every turn belongs in the context window through an `AIContextProvider`, not behind a tool the
-agent has to remember to call twice. That is what milestone 2 is for, and this is the experiment
-that justifies it.
+one that is silently wrong. Then accept that this is not the fix.
+
+Note what the tool is *not* guilty of here. `ScanSector` reads `simulation.State` at call time and
+would have returned the freighter at T003. The agent never called it. The failure is not a stale
+tool, it is an uncalled one — so the fix is not to move the sweep into context, it is to put the
+**trigger** into context.
+
+That trigger is small: *one contact on the plot, last sweep T000, three turns ago.* Regenerated
+every turn by an `AIContextProvider`, it is a fact about now rather than another old message in the
+history, and it is the only thing that makes a second sweep worth doing. Mirroring the whole panel
+into the turn would also work and would make `ScanSector` redundant, which is the trade milestone 2
+declines — see `docs/architecture.md`. Either way the rule is the same: you cannot look up what you
+do not know to ask about.

@@ -6,8 +6,12 @@ You are the captain of the ISV Kestrel. AURORA is the ship's intelligence, and i
 `HarnessAgent` wrapped around an `IChatClient`. The ship is a real simulation with hull integrity,
 reactor heat, power budgets, pressurised compartments, and a crew who have names and can die.
 
-Companion code for a four-part series plus a standalone companion post. Each post has a git tag,
-so you land on the code the post describes rather than the head of `main`.
+Companion code for a four-part series plus a standalone companion post. Each post gets a git tag as
+it lands, so you can check out the code a post describes rather than the head of `main`. Milestone 1
+is tagged `post-1`; the rest follow as they are written.
+
+**What is built and what is next lives in [`docs/milestones.md`](docs/milestones.md).** Short version:
+milestone 1 is shipped, and AURORA can look at the world but cannot touch it.
 
 | Post | Covers | Tag |
 | --- | --- | --- |
@@ -27,7 +31,7 @@ moving; versions are pinned exactly in `Directory.Packages.props`.
 ```bash
 git clone <this repo> && cd ship-ai-harness
 cp .env.example .env          # fill in AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_DEPLOYMENT
-dotnet test                   # 36 tests, no model calls, ~1s
+dotnet test                   # 38 tests, no model calls, ~1s
 dotnet run --project src/ShipAI.Console
 ```
 

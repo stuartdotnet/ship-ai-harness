@@ -12,3 +12,6 @@ agent-file-memory/
 TestResults/
 [Cc]overage*/
 *.received.*
+
+# The deck build script wants python-pptx. See docs/talk/README.md.
+.venv/

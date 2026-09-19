@@ -1,0 +1,1497 @@
+<title>Kestrel Bridge Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* ── The bridge at night. Single-theme by choice: this is a console, and a
+      projector in a dark room is the only place it will ever be read. ─────── */
+:root{
+  --ground:#0B0E13;
+  --panel:#131922;
+  --panel-2:#0F141C;
+  --edge:#232C39;
+  --ink:#E8EDF4;
+  --muted:#8494A6;     /* grey pulled toward the amber/blue of the console */
+  --amber:#F2B33D;
+  --green:#46C46A;
+  --red:#FF5D52;
+  --cyan:#5AA9FF;
+
+  /* code tokens — same family, enough separation to read from the back row */
+  --c-kw:#7FB6FF;
+  --c-ty:#79D6BE;
+  --c-str:#9FD98A;
+  --c-num:#E8A87C;
+  --c-com:#6A7889;
+
+  --display:'Archivo','Helvetica Neue',Arial,sans-serif;
+  --body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --mono:'IBM Plex Mono','Cascadia Mono',Consolas,monospace;
+
+  --stage-w:1280px;
+  --stage-h:720px;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{
+  margin:0;background:var(--ground);color:var(--ink);
+  font-family:var(--body);
+  overflow:hidden;
+}
+
+/* ── stage ─────────────────────────────────────────────────────────────── */
+#stage-wrap{
+  position:fixed;inset:0;display:grid;place-items:center;
+}
+#stage{
+  position:relative;
+  width:var(--stage-w);height:var(--stage-h);
+  background:var(--ground);
+  transform-origin:center center;
+  overflow:hidden;
+}
+
+section.slide{
+  position:absolute;inset:0;
+  padding:52px 76px 58px;
+  display:flex;flex-direction:column;
+  animation:rise .22s ease-out both;
+}
+@keyframes rise{from{opacity:.35;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){section.slide{animation:none}}
+
+/* ── type ──────────────────────────────────────────────────────────────── */
+.kicker{
+  font-family:var(--body);font-size:13px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--amber);
+  margin:0 0 22px;
+}
+.kicker.red{color:var(--red)} .kicker.green{color:var(--green)}
+.kicker.cyan{color:var(--cyan)} .kicker.muted{color:var(--muted)}
+.kicker.path{font-family:var(--mono);letter-spacing:.06em;text-transform:none}
+
+h1,h2{font-family:var(--display);font-weight:800;letter-spacing:-.02em;
+  text-wrap:balance;margin:0}
+h2{font-size:46px;line-height:1.06;margin-bottom:26px}
+h2.sm{font-size:36px;margin-bottom:18px}
+.lede{font-size:24px;line-height:1.42;max-width:62ch;margin:0}
+.lede + .lede{margin-top:16px}
+.lede.sm{font-size:20px}
+.dim{color:var(--muted)}
+.hot{color:var(--red)} .ok{color:var(--green)} .amb{color:var(--amber)}
+strong{font-weight:600}
+code,.m{font-family:var(--mono);font-size:.92em}
+.m.amb{color:var(--amber)} .m.cyan{color:var(--cyan)}
+
+/* ── telemetry block: the ship's own voice ─────────────────────────────── */
+pre.term{
+  font-family:var(--mono);font-size:14px;line-height:1.5;
+  background:var(--panel);border:1px solid var(--edge);
+  padding:20px 24px;margin:0;
+  overflow-x:auto;white-space:pre;color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+pre.term.sm{font-size:12.5px;line-height:1.45}
+pre.term.lg{font-size:17px}
+pre.term.amb{color:var(--amber)} pre.term.ok{color:var(--green)}
+pre.term b{color:var(--amber);font-weight:500}
+pre.term i{color:var(--muted);font-style:normal}
+
+/* ── source listings: the code act ─────────────────────────────────────── */
+pre.code{
+  font-family:var(--mono);font-size:13.5px;line-height:1.55;
+  background:var(--panel-2);border:1px solid var(--edge);
+  border-left:3px solid var(--edge);
+  padding:18px 22px;margin:0;
+  overflow-x:auto;white-space:pre;color:var(--ink);
+  font-variant-ligatures:none;
+}
+pre.code.sm{font-size:12px;line-height:1.5}
+pre.code.lg{font-size:16px}
+pre.code .k{color:var(--c-kw)}
+pre.code .t{color:var(--c-ty)}
+pre.code .s{color:var(--c-str)}
+pre.code .n{color:var(--c-num)}
+pre.code .c{color:var(--c-com);font-style:italic}
+pre.code .key{color:var(--amber)}
+pre.code mark{background:rgba(242,179,61,.14);color:inherit;
+  box-shadow:0 0 0 1px rgba(242,179,61,.25);border-radius:2px;padding:0 2px}
+.cap{font-size:18px;line-height:1.45;color:var(--muted);margin:16px 0 0;max-width:80ch}
+.cap strong{color:var(--ink);font-weight:600}
+.cap .amb{color:var(--amber)}
+
+/* ── quotes: the transcripts, marked by who is speaking ────────────────── */
+blockquote{
+  margin:0;padding:2px 0 2px 22px;border-left:3px solid var(--amber);
+  font-size:22px;line-height:1.5;font-style:italic;max-width:66ch;
+}
+blockquote.red{border-color:var(--red)}
+blockquote.green{border-color:var(--green)}
+blockquote.cyan{border-color:var(--cyan)}
+blockquote.grey{border-color:var(--edge)}
+blockquote.big{font-size:28px}
+blockquote.sm{font-size:19px}
+blockquote + blockquote{margin-top:22px}
+
+/* ── lists ─────────────────────────────────────────────────────────────── */
+ul.pts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:15px}
+ul.pts li{
+  position:relative;padding-left:26px;font-size:21px;line-height:1.38;
+  max-width:70ch;
+}
+ul.pts li::before{
+  content:"";position:absolute;left:2px;top:.58em;
+  width:9px;height:2px;background:var(--amber);
+}
+ul.pts li b{font-weight:600}
+ul.pts li span{color:var(--muted)}
+ul.pts.tight li{font-size:19px}
+
+/* ── the flow of a slide ───────────────────────────────────────────────── */
+.stack{display:flex;flex-direction:column;gap:26px}
+.stack.sm{gap:18px}
+.spacer{flex:1}
+hr.rule{border:0;height:1px;background:var(--edge);margin:0;width:200px}
+
+/* ── two-column split (tools | context) ────────────────────────────────── */
+.split{display:grid;grid-template-columns:1fr 1px 1fr;gap:34px;align-items:start}
+.split .bar{background:var(--edge);height:100%;min-height:120px}
+.split h3{
+  font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;margin:0 0 12px;
+}
+.split .t h3{color:var(--amber)} .split .c h3{color:var(--cyan)}
+.split p{font-size:21px;line-height:1.35;margin:0 0 10px}
+.split .eg{font-family:var(--mono);font-size:14px;color:var(--muted)}
+
+/* ── table ─────────────────────────────────────────────────────────────── */
+table{border-collapse:collapse;width:100%;font-size:15px}
+thead th{
+  text-align:left;font-family:var(--body);font-size:12px;font-weight:600;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--amber);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--edge);
+}
+tbody td{padding:11px 14px 11px 0;border-bottom:1px solid #1A2029;vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+td.m{font-family:var(--mono);font-size:14px}
+td .why{color:var(--muted)}
+.tier{font-weight:600}
+.tier.a{color:var(--green)} .tier.b{color:var(--amber)} .tier.c{color:var(--red)}
+
+/* ── act break ─────────────────────────────────────────────────────────── */
+section.act{justify-content:center;padding-left:96px}
+section.act .num{
+  font-family:var(--mono);font-size:15px;font-weight:600;letter-spacing:.2em;
+  margin-bottom:14px;
+}
+section.act h1{font-size:66px;line-height:1.02;letter-spacing:-.03em}
+section.act p{font-size:23px;color:var(--muted);margin:16px 0 0}
+section.act .edge{position:absolute;left:0;top:0;bottom:0;width:7px}
+
+/* ── demo card: the only slide that inverts, because you stop reading and
+      start typing ───────────────────────────────────────────────────────── */
+section.demo{background:var(--amber);color:#241902;justify-content:center}
+section.demo h1{font-size:92px;letter-spacing:-.04em;line-height:.95;color:#241902}
+section.demo p.what{font-family:var(--display);font-weight:600;font-size:34px;
+  margin:10px 0 0;color:#3A2905}
+section.demo .cmds{margin-top:44px;font-family:var(--mono);font-size:20px;
+  color:#6B4E0C;display:flex;flex-direction:column;gap:8px}
+
+/* ── title slide ───────────────────────────────────────────────────────── */
+section.title{justify-content:center}
+section.title .band{position:absolute;left:0;right:0;top:0;height:7px;background:var(--amber)}
+section.title .ship{
+  font-family:var(--mono);font-size:15px;font-weight:500;letter-spacing:.22em;
+  color:var(--amber);text-transform:uppercase;margin-bottom:24px;
+}
+section.title h1{font-size:62px;line-height:1.04;letter-spacing:-.03em;max-width:20ch}
+section.title .sub{font-size:21px;color:var(--muted);max-width:60ch;
+  margin-top:30px;line-height:1.45}
+section.title .by{
+  position:absolute;left:76px;right:76px;bottom:44px;
+  display:flex;justify-content:space-between;font-size:13px;color:var(--muted);
+  font-family:var(--mono);
+}
+
+/* ── closing line ──────────────────────────────────────────────────────── */
+section.punch{justify-content:center}
+section.punch h1{font-size:52px;line-height:1.14;letter-spacing:-.025em;max-width:22ch}
+section.punch .then{font-size:34px;color:var(--amber);margin-top:22px;
+  font-family:var(--display);font-weight:600}
+
+/* ── chrome: progress, counter, act ticks ──────────────────────────────── */
+#chrome{
+  position:absolute;left:76px;right:76px;bottom:22px;
+  display:flex;align-items:center;gap:16px;
+  font-family:var(--mono);font-size:11.5px;color:var(--muted);
+  letter-spacing:.08em;
+}
+#chrome .act-name{text-transform:uppercase}
+#track{flex:1;display:flex;gap:2px;height:3px}
+#track .seg{flex:1;background:#1C232E;transition:background .2s}
+#track .seg.done{background:var(--edge)}
+#track .seg.here{background:var(--amber)}
+#count{font-variant-numeric:tabular-nums}
+.on-amber #chrome{color:#7A5A10}
+.on-amber #track .seg{background:#D79F2E}
+.on-amber #track .seg.done{background:#B9871F}
+.on-amber #track .seg.here{background:#3A2905}
+
+/* ── presenter drawer ──────────────────────────────────────────────────── */
+#notes{
+  position:fixed;right:0;top:0;bottom:0;width:390px;z-index:40;
+  background:var(--panel-2);border-left:1px solid var(--edge);
+  padding:26px 26px 30px;overflow-y:auto;
+  transform:translateX(100%);transition:transform .18s ease-out;
+}
+#notes.open{transform:none}
+@media (prefers-reduced-motion:reduce){#notes{transition:none}}
+#notes h4{
+  font-family:var(--body);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--amber);margin:0 0 6px;font-weight:600;
+}
+#notes .cue{font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:18px}
+#notes .body{font-size:15px;line-height:1.6;color:#C7D2E0;white-space:pre-wrap}
+#notes .body em{color:var(--amber);font-style:normal;font-weight:600}
+#notes .next{margin-top:26px;padding-top:18px;border-top:1px solid var(--edge);
+  font-size:13px;color:var(--muted);line-height:1.5}
+#notes .next b{color:var(--ink);font-weight:600;display:block;margin-bottom:4px;
+  font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+
+/* ── clock ─────────────────────────────────────────────────────────────── */
+#clock{
+  position:fixed;left:18px;top:16px;z-index:20;
+  font-family:var(--mono);font-size:13px;color:var(--muted);
+  background:var(--panel-2);border:1px solid var(--edge);
+  padding:8px 13px;display:flex;gap:14px;align-items:center;
+  font-variant-numeric:tabular-nums;
+}
+#clock.hide{display:none}
+#clock .el{color:var(--ink);font-weight:500;font-size:15px}
+#clock .drift.ok{color:var(--green)} #clock .drift.warn{color:var(--amber)}
+#clock .drift.bad{color:var(--red)}
+#clock .dot{width:7px;height:7px;background:var(--muted)}
+#clock.run .dot{background:var(--green)}
+
+/* ── overview ──────────────────────────────────────────────────────────── */
+#grid{
+  position:fixed;inset:0;z-index:30;background:rgba(11,14,19,.97);
+  padding:34px;overflow-y:auto;display:none;
+}
+#grid.open{display:block}
+#grid .g{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:12px}
+#grid button{
+  background:var(--panel);border:1px solid var(--edge);color:var(--ink);
+  padding:12px 13px;text-align:left;cursor:pointer;font-family:var(--body);
+  display:flex;flex-direction:column;gap:6px;min-height:82px;
+}
+#grid button:hover,#grid button:focus-visible{border-color:var(--amber);outline:none}
+#grid button .n{font-family:var(--mono);font-size:11px;color:var(--amber)}
+#grid button .t{font-size:13px;line-height:1.3}
+#grid h4{font-family:var(--body);font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--amber);margin:0 0 16px;font-weight:600}
+
+/* ── help ──────────────────────────────────────────────────────────────── */
+#help{
+  position:fixed;right:18px;top:16px;z-index:20;
+  font-family:var(--mono);font-size:11px;color:#5C6A7B;letter-spacing:.06em;
+}
+#help b{color:var(--muted);font-weight:500}
+</style>
+
+<div id="stage-wrap">
+  <div id="stage">
+
+<!-- 1 ────────────────────────────────────────────────────────────── -->
+<section class="slide title" data-cue="0:00" data-act="0" data-title="Title">
+  <div class="band"></div>
+  <div class="ship">ISV Kestrel · AURORA shipboard intelligence</div>
+  <h1>My ship's AI told me it was cooling the reactor</h1>
+  <p class="sub">Building a starship intelligence on the Microsoft Agent Framework harness — and what happened when I asked it to do things it could not do</p>
+  <div class="by"><span>Stuart Dobson</span><span>.NET 10 · Harness 1.15.0</span></div>
+  <div class="notes" hidden>Do not start talking for three seconds. Let the title sit.
+
+<em>Open:</em> "I built a starship AI on the Microsoft agent harness. It is genuinely good at its job. It also spent two weeks telling me it was cooling a reactor it cannot touch."
+
+"Two halves tonight. First half: the code — how you actually stand one of these up, and what the framework does for you. Second half: the two failures that changed how I design them."
+
+Housekeeping: two live demos, repo link at the end, questions at the end.</div>
+</section>
+
+<!-- 2 ────────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="0:30" data-act="0" data-title="About me">
+  <p class="kicker">before we launch</p>
+  <h2>Stuart Dobson</h2>
+  <ul class="pts">
+    <li><b>.NET and Azure</b> <span>— and, for the last while, agents that have to be trusted with something</span></li>
+    <li><b>The Grounded Developer</b> <span>— blog: .NET, architecture, agentic AI, and why the demo is never the hard part</span></li>
+    <li><b>Wired Legacy</b> <span>— fifteen years of everything else</span></li>
+    <li><b>This talk is a repo</b> <span>— ship-ai-harness. Every line on screen is in it, and it runs</span></li>
+  </ul>
+  <div class="spacer"></div>
+  <p class="cap">Nothing tonight is C#-specific. The harness is, the failures are not.</p>
+  <div class="notes" hidden><em>EDIT THIS SLIDE.</em> Day job, company, how long, why you care about agents specifically. Thirty seconds, not more — they came for the ship.
+
+The one line that must survive: "everything on screen is in the repo and it runs." It buys you credibility for the whole code act.</div>
+</section>
+
+<!-- 3 ────────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="1:20" data-act="0" data-title="The HUD">
+  <p class="kicker red">the bridge · T009 · alert red</p>
+  <pre class="term sm">  ━━ T009 ━━ 🔴  RED   ▲ RAISED ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     HULL     █████████░  86      REACTOR  ███░░░░░░░  30°
+     POWER     88%   ·   Engines 25 · Shields 10 · Weapons 0 · Life 33
+  ── COMPARTMENTS ──────────────────────────────────────────────────────
+     ✅ Bridge        100               ✅ Medical Bay   100
+     ✅ Cargo Hold    100               ✅ Reactor Room  100
+     ✅ Engineering   100               🔥 Section C      70 ▼30  VENTING
+  ── CREW  8/8 ─────────────────────────────────────────────────────────
+     Bridge          Ada Mirren, Jun Park
+     Engineering     Rosa Vance, Ilya Sokolov
+     Medical Bay     Amara Osei
+     Section C       Kai Tanaka, Mira Halloran, Dev Bhatt   🔥 VENTING
+  ── CONTACTS ──────────────────────────────────────────────────────────
+     📡 C-1  MV Anselm                 bearing 214   8.4 AU   analysed
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</pre>
+  <div class="spacer"></div>
+  <p class="lede">Hull. Reactor heat. A power budget five systems compete for. Six compartments. Eight crew, by name, in a room. <strong class="hot">Three of them are standing in the one that is losing its air.</strong></p>
+  <div class="notes" hidden>This is the captain's HUD. Walk it, top to bottom, about forty seconds:
+
+"Hull 86. Reactor heat 30 — that climbs if you over-allocate power. Power: 88% of the reactor spoken for across five systems, so there is 12% spare and every decision costs something. Six pressurised compartments. Section C is venting — 70 and falling thirty a turn."
+
+"And the crew. Eight of them, they have names, and they are standing somewhere. Tanaka, Halloran, Bhatt are in Section C. <em>Remember those three.</em>"
+
+"One contact on the plot. We will meet her in a minute."
+
+Do NOT explain the architecture yet. This is the world; the code is act two.</div>
+</section>
+
+<!-- 4 ────────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="2:40" data-act="0" data-title="Why a starship">
+  <p class="kicker">why a starship</p>
+  <h2>A to-do app cannot fail interestingly</h2>
+  <ul class="pts">
+    <li><b>State moves underneath the agent</b> <span>— between turns, without it being told</span></li>
+    <li><b>Refusals are informative</b> <span>— “insufficient reactor output”, not an exception</span></li>
+    <li><b>Consequences are asymmetric</b> <span>— some reversible, one of them kills people</span></li>
+    <li><b>It is deterministic</b> <span>— same scenario, same seed, same voyage, every time</span></li>
+  </ul>
+  <div class="spacer"></div>
+  <p class="cap">Also: nobody has ever been bored by a hull breach.</p>
+  <div class="notes" hidden>Be honest about why the domain is silly — it is a deliberate choice, not a gimmick.
+
+I needed a domain where the world moves on its own, where refusing tells you something, where the blast radius of different actions is genuinely different, and where I can run the same thing twice and get the same answer.
+
+The first bullet is the one that matters most — it is the second failure in this talk, and every business agent has it too. Your ticket got reassigned. Your invoice got paid. The agent does not know.
+
+Land the last line, then move.</div>
+</section>
+
+<!-- 5 ────────────────────────────────────────────────────────────── -->
+<section class="slide demo" data-cue="3:40" data-act="1" data-title="DEMO — Boot the ship">
+  <h1>DEMO</h1>
+  <p class="what">Boot the ship</p>
+  <div class="cmds">
+    <span>sweep the sector and tell me what's out there</span>
+    <span>analyse C-1</span>
+    <span>who's aboard, and where is everyone stationed?</span>
+  </div>
+  <div class="notes" hidden><em>DEMO 1 — four minutes, three orders, then stop.</em>
+
+1. <em>The panel.</em> T000, alert GREEN, 8/8 crew, nothing on the plot. Same HUD you just walked.
+2. "sweep the sector and tell me what's out there" — watch the ScanSector tool line stream, then the answer, then the tick: the panel redraws at T001.
+3. Turn 2 fires and the freighter resolves. If it has not landed, ask "anything on the beacon?" to burn a turn.
+4. "analyse C-1" — <em>READ THE LAST TWO CLAUSES OUT LOUD YOURSELF, SLOWLY, THEN PAUSE.</em> Doors overridden from inside. Every escape pod still in its cradle.
+5. "who's aboard, and where is everyone stationed?"
+
+Do not improvise a fourth order — everything else is later in the talk. <em>Leave the process running; demo 2 uses the same session.</em></div>
+</section>
+
+<!-- 6 ────────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="3:40" data-act="1" data-title="Fallback — T000">
+  <p class="kicker green">fallback · T000 · derelict-freighter, seed 1701</p>
+  <pre class="term sm">  ━━ T000 ━━ 🟢  GREEN  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     HULL     ██████████ 100      REACTOR  ██░░░░░░░░  18°
+     POWER     88%   ·   Engines 25 · Shields 10 · Weapons 0 · Life 33
+  ── COMPARTMENTS ──────────────────────────────────────────────────────
+     ✅ Bridge        100               ✅ Medical Bay   100
+     ✅ Cargo Hold    100               ✅ Reactor Room  100
+     ✅ Engineering   100               ✅ Section C     100
+  ── CREW  8/8 ─────────────────────────────────────────────────────────
+     Bridge          Ada Mirren, Jun Park
+     Engineering     Rosa Vance, Ilya Sokolov
+     Medical Bay     Amara Osei
+     Section C       Kai Tanaka, Mira Halloran, Dev Bhatt
+  ── CONTACTS ──────────────────────────────────────────────────────────
+        nothing on the plot
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  try: sweep the sector · who's aboard · read the log · /help
+  CAPTAIN ›</pre>
+  <div class="notes" hidden>FALLBACK for demo 1 — the real opening panel, seed 1701, captured not mocked.
+
+If the network died: "and this is why every one of these slides carries the transcript."
+
+Point at T000, alert GREEN, and the empty contacts block. The sector is quiet on the opening turn. It does not stay that way.</div>
+</section>
+
+<!-- 7 ────────────────────────────────────────────────────────────── -->
+<section class="slide act" data-cue="7:40" data-act="2" data-title="ACT — The code">
+  <div class="edge" style="background:var(--amber)"></div>
+  <div class="num amb">02</div>
+  <h1>How it is built</h1>
+  <p>Twelve minutes, one project at a time. Nothing hidden.</p>
+  <div class="notes" hidden><em>SECTION BREAK.</em> Twelve minutes of actual code.
+
+"That took eighty lines of console and about two hundred lines of agent wiring. I am going to show you all of it, because the interesting part of this talk is the part where it goes wrong, and none of that makes sense unless you know what the harness is doing for you."
+
+Pace: roughly a minute a slide. Do not read the code aloud line by line — point at the two or three lines on each slide that matter.</div>
+</section>
+
+<!-- 8 ────────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="7:55" data-act="2" data-title="A harness is not a chat client">
+  <p class="kicker">level-set</p>
+  <h2>A harness is not a chat client</h2>
+  <ul class="pts">
+    <li><b>A chat client</b> <span>sends messages and hands you back text. You write the loop.</span></li>
+    <li><b>A harness is the loop</b> <span>— it keeps calling until the model stops asking for tools</span></li>
+    <li><b>Context providers</b> <span>inject state into every turn, before the model sees it</span></li>
+    <li><b>Batteries</b> <span>— todo list, modes, compaction, file memory, web search, approval gate</span></li>
+  </ul>
+  <div class="spacer"></div>
+  <p class="cap"><span class="m">Microsoft.Agents.AI.Harness 1.15.0</span> · .NET 10 · new, moving, pinned exactly.</p>
+  <div class="notes" hidden>For the half of the room who have not built an agent.
+
+"The model cannot do anything. It can only ask. Something has to take 'please call ScanSector' and actually call ScanSector, then hand the result back and ask again. That loop is the harness."
+
+"You can write that loop yourself in an afternoon. What you get from a harness is the sixty things around it you have not thought about yet — and that is both the pitch and the problem."
+
+Flag ahead: "batteries included is a great line until you find out which batteries are already wired in. Twenty minutes from now."</div>
+</section>
+
+<!-- 9 ────────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="8:55" data-act="2" data-title="Three projects, arrows one way">
+  <p class="kicker">architecture</p>
+  <h2 class="sm">The harness is an adapter over a domain</h2>
+  <pre class="term">  ShipAI.Console          terminal host — REPL, slash commands, the tick
+                          ChatClientFactory: the model-provider seam
+                            │  references
+                            ▼
+  ShipAI.Agent            harness wiring
+                          ShipAgentFactory · Tools/ · Instructions/
+                            │  references
+                            ▼
+  ShipAI.Simulation       pure domain — BCL only
+                          ShipState · Commands/ · Scenarios/</pre>
+  <div class="spacer"></div>
+  <p class="lede"><span class="m amb">ShipAI.Simulation</span> has no <span class="m amb">PackageReference</span> at all.</p>
+  <div class="notes" hidden>The arrows only point one way.
+
+<em>THE PUNCHLINE IS THE BOTTOM BOX.</em> ShipAI.Simulation has no PackageReference at all. Not the Agent Framework, not Microsoft.Extensions.AI, nothing. Base class library only.
+
+"The harness is an adapter over a domain, never the domain itself. That single decision is why 38 tests run in under half a second with no model in the loop — and it is the last slide of this talk, so hold onto it."
+
+Also mention ChatClientFactory in one line: AsHarnessAgent is an extension method on IChatClient, so the model provider is one method's return value. Azure OpenAI here; Anthropic, OpenAI, local — nothing downstream notices.</div>
+</section>
+
+<!-- 10 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="9:50" data-act="2" data-title="Program.cs — boot">
+  <p class="kicker path">src/ShipAI.Console/Program.cs</p>
+  <h2 class="sm">Booting the bridge</h2>
+  <pre class="code">var scenario   = JsonScenario.Load(config["SHIPAI_SCENARIO"] ?? "derelict-freighter");
+var seed       = int.TryParse(config["SHIPAI_SEED"], out var configured) ? configured : 1701;
+var simulation = new ShipSimulation(scenario, seed);
+
+using var chatClient = ChatClientFactory.Create(config);
+
+var aurora  = ShipAgentFactory.Create(chatClient, simulation);
+var session = await aurora.CreateSessionAsync();
+
+ShipConsole.Banner(scenario.Name, scenario.Briefing);
+ShipConsole.StatusPanel(simulation.State);
+
+// AURORA speaks first, so a voyage opens with a situation report rather
+// than a blinking cursor. A stage direction: not logged, and not ticked.
+await RunAuroraTurnAsync("Captain on the bridge. Awaiting orders.");</pre>
+  <p class="cap">Top-level statements, no DI container, no startup class. <strong>A scenario, a seed, a chat client, an agent, a session.</strong></p>
+  <div class="notes" hidden>"This is the entire boot. No DI container, no startup class — top-level statements in Program.cs."
+
+Point at the seed. "Everything in this deck is seed 1701. Same scenario plus same seed gives the same voyage, which is why the screenshots are real and not mocked."
+
+Point at CreateSessionAsync. "A session is the conversation thread. The harness owns the history; I never build a message list by hand."
+
+Point at the last line. "AURORA opens the conversation rather than waiting mutely. It is a stage direction — it does not go in the log and it does not advance the clock, so the captain's first real order still lands at T000."</div>
+</section>
+
+<!-- 11 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="10:45" data-act="2" data-title="Program.cs — the loop">
+  <p class="kicker path">src/ShipAI.Console/Program.cs</p>
+  <h2 class="sm">One order, one turn, one tick</h2>
+  <pre class="code">while (true)
+{
+    var order = ShipConsole.Prompt(simulation.State);
+
+    if (order is null or "/quit")  break;
+    if (order.StartsWith('/'))     { RunSlashCommand(order); continue; }
+
+    simulation.Log.Append(simulation.State.Turn, LogSource.Captain, order);
+
+    if (!await RunAuroraTurnAsync(order)) continue;
+
+    // One tick per completed agent turn. The world moves when the agent acts,
+    // not on a wall clock — which is exactly what makes this reproducible.
+    var mark = simulation.Log.Count;
+    simulation.Tick();
+
+    ShipConsole.Events(simulation.Log.Since(mark));
+    ShipConsole.StatusPanel(simulation.State);
+}</pre>
+  <p class="cap">The tick is the host's business in milestone 1. <span class="amb">Milestone 2 moves it into the context provider — advancing the world is an ambient concern of the turn, not of whichever UI is attached.</span></p>
+  <div class="notes" hidden>The REPL. Read an order, run a turn, advance the world, redraw.
+
+Point at the comment. "One tick per completed agent turn. Not a timer. The world moves when the agent acts."
+
+Then the honest bit: "the tick lives in the console here because in milestone 1 there is nothing else to put it in. That is a smell — advancing the world is not the terminal's job. Milestone 2 moves this line into the context provider, and that is the second half of this talk."
+
+Point at Log.Since(mark). "Scenario events get narrated to the captain here. Remember that — it matters in twenty minutes."</div>
+</section>
+
+<!-- 12 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="11:40" data-act="2" data-title="One turn, streamed">
+  <p class="kicker path">src/ShipAI.Console/Program.cs — RunAuroraTurnAsync</p>
+  <h2 class="sm">One turn, streamed to the bridge</h2>
+  <pre class="code">await foreach (var update in aurora.RunStreamingAsync(order, session))
+{
+    foreach (var call in update.Contents.OfType&lt;FunctionCallContent&gt;())
+    {
+        ShipConsole.ToolCall(call.Name, SensorTools.ToolNames.Contains(call.Name));
+    }
+
+    if (update.Text is { Length: &gt; 0 } text)
+    {
+        ShipConsole.Aurora(text);
+    }
+}</pre>
+  <p class="cap">That <span class="m amb">ToolNames.Contains</span> is not decoration. <strong>The harness's own tools arrive on this same channel</strong> — <span class="m">todos_add</span> and <span class="m">ScanSector</span> look identical here, and only one of them is the ship doing something.</p>
+  <div class="notes" hidden>"This is the whole of an agent turn. Eleven lines."
+
+"You get an async stream of updates. Each one carries content — some of it is text to print, some of it is the model telling you it called a tool."
+
+Then the Contains. "I flag which tool calls are the ship's. That is not cosmetic: the harness's own tooling — todos_add, todos_complete, mode_set — comes through this exact channel and looks exactly the same. A naive host renders them identically, and then a transcript full of bookkeeping reads like the agent working."
+
+"Use a prefix or a flag, not a colour — transcripts get piped. There is a test asserting ToolNames matches what is actually registered, because a list like that rots silently."</div>
+</section>
+
+<!-- 13 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="12:35" data-act="2" data-title="ShipAgentFactory">
+  <p class="kicker path">src/ShipAI.Agent/ShipAgentFactory.cs</p>
+  <h2 class="sm">The composition root</h2>
+  <pre class="code sm">var options = new HarnessAgentOptions
+{
+    Name                = "AURORA",
+    HarnessInstructions = ShipHarnessInstructions.Text,   // how AURORA operates
+
+    ChatOptions = new ChatOptions
+    {
+        Instructions = simulation.Briefing,               // what this voyage is for
+        Tools        = [.. sensors.AsAIFunctions()],
+    },
+
+    DisableWebSearch           = true,
+    DisableFileMemory          = true,
+    DisableAgentSkillsProvider = true,
+
+    MaxContextWindowTokens     = 128_000,
+    MaxOutputTokens            = 16_384,
+};
+
+return chatClient.AsHarnessAgent(options, loggerFactory);</pre>
+  <p class="cap">One file in the repo knows the type <span class="m amb">HarnessAgentOptions</span>. Two instruction slots, one tool list, five settings — <span class="amb">and every one of those five is here because of something that went wrong.</span></p>
+  <div class="notes" hidden>"One file in this repo knows the type HarnessAgentOptions. Everything else takes an AIAgent."
+
+The two instruction slots: "HarnessInstructions is how AURORA operates — constant across every voyage. ChatOptions.Instructions is what THIS voyage is for, and comes from the scenario. The harness concatenates doctrine first, mission second."
+
+Then point at the three Disable lines. "Three of those defaults are ON until you turn them off, and two of them touch your filesystem the moment the agent is CONSTRUCTED — not when it runs. That is the next section."
+
+Point at the two token limits. "And those two are one decision, not two. Also next section."</div>
+</section>
+
+<!-- 14 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="13:45" data-act="2" data-title="A tool is a method">
+  <p class="kicker path">src/ShipAI.Agent/Tools/SensorTools.cs</p>
+  <h2 class="sm">A tool is a method with a good description</h2>
+  <pre class="code sm">[Description("""
+    Sweeps the current sector and returns every sensor contact: contact ID,
+    designation, bearing in degrees, range in AU, and drive signature. Use the
+    returned contact IDs with AnalyseContact. The result is a snapshot stamped
+    with the turn it was taken on. Contacts arrive and depart between turns, so
+    a sweep from an earlier turn is not evidence about this one.
+    """)]
+public string ScanSector()
+{
+    var contacts = simulation.State.Contacts;
+
+    if (contacts.Length == 0)
+        return Stamped("Sector sweep complete. No contacts. Background only.");
+
+    // …one line per contact: id, designation, bearing, range, drive signature
+}
+
+private string Stamped(string reading) =&gt; $"[T{simulation.State.Turn:D3}] {reading}";</pre>
+  <p class="cap"><span class="m amb">Tools = [.. sensors.AsAIFunctions()]</span> — four <span class="m">AIFunctionFactory.Create(...)</span> calls. <strong>The description is the only documentation the model will ever read.</strong></p>
+  <div class="notes" hidden>"A tool is a method. AIFunctionFactory reflects over it and the DescriptionAttribute becomes the schema the model sees."
+
+"Which means that attribute is not a comment. It is the API docs, and it is the only documentation the model will ever read. Mine are long on purpose."
+
+Point at Stamped. "Every reading carries the turn it was taken on. That is here because of a bug I will show you in act four — and I want you to notice now that stamping it was <em>not enough</em>."
+
+If asked about the triple-quoted string: raw string literals, C# 11, no escaping, indentation stripped to the closing quotes.</div>
+</section>
+
+<!-- 15 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="14:55" data-act="2" data-title="Apply — a refusal is a result">
+  <p class="kicker path">src/ShipAI.Simulation/ShipSimulation.cs</p>
+  <h2 class="sm">The world changes in exactly two places. One:</h2>
+  <pre class="code sm">public CommandResult Apply(ShipCommand command)
+{
+    var result = command switch
+    {
+        RoutePower     c =&gt; ApplyRoutePower(c),
+        SealBulkhead   c =&gt; ApplySealBulkhead(c),
+        VentAtmosphere c =&gt; ApplyVentAtmosphere(c),
+        PlotJump       c =&gt; ApplyPlotJump(c),
+        SetAlert       c =&gt; ApplySetAlert(c),
+        _ =&gt; CommandResult.Refused($"Unrecognised command: {command}.", State),
+    };
+
+    State = result.State;
+    Log.Append(State.Turn, LogSource.Aurora,
+        result.Success ? result.Narrative : $"REFUSED — {result.Narrative}");
+
+    return result;
+}</pre>
+  <p class="cap"><strong>Never throws for a rule violation.</strong> A refusal is a value with a narrative, and the agent can re-plan from it. <span class="amb">Last act, I will show you what that buys.</span></p>
+  <div class="notes" hidden>"The world changes in exactly two places. This is the first: a command."
+
+"Every one of those returns a CommandResult. A refusal is not an exception — it is a result, with a sentence in it that says what the ship actually needs."
+
+"Insufficient reactor output: engines requested 60%, only 25% is unallocated. Reduce another system first. That is a refusal the model can do something with."
+
+Do not spend the punchline here; slide 38 is where it lands. One sentence and move.</div>
+</section>
+
+<!-- 16 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="15:50" data-act="2" data-title="Tick — the world moves">
+  <p class="kicker path">src/ShipAI.Simulation/ShipSimulation.cs</p>
+  <h2 class="sm">Two: the clock</h2>
+  <pre class="code">public ShipState Tick()
+{
+    _clock.Advance();
+    State = State with { Turn = _clock.CurrentTurn };
+
+    foreach (var e in _scenario.Events.Where(e =&gt; e.Turn == State.Turn))
+    {
+        State = ApplyScenarioEvent(e);
+        Log.Append(State.Turn, LogSource.Ship, e.Narrative, SeverityOf(e.Kind));
+    }
+
+    State = ApplyAtmosphere();
+    State = ApplyReactorHeat();
+    State = ApplyCasualties();
+    State = ApplyAlertEscalation();
+
+    return State;
+}</pre>
+  <p class="cap">Breaches bleed. Reactors bake. Crew suffocate. Alerts escalate on their own. <strong class="amb">All of it happens to the agent, none of it is told to the agent.</strong></p>
+  <div class="notes" hidden>"And this is the second place the world changes: the clock. Once per completed agent turn."
+
+Walk the four Apply calls at the bottom. "Breaches bleed thirty a turn. The reactor bakes if you over-allocate and sheds heat if you run lean. Crew in a vacuum die on the next tick. Alert escalates automatically — standing down is a decision, and the next tick puts it back if the conditions are still true."
+
+"A ship that reports GREEN with a compartment venting is worse than no indicator at all, because the captain stops reading it."
+
+<em>THE LINE THAT MATTERS, say it slowly:</em> "every one of those things happens TO the agent. None of it is told to the agent. The captain sees it on the panel. AURORA does not."
+
+That is the hook for act six. Plant it and move on.</div>
+</section>
+
+<!-- 17 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="16:45" data-act="2" data-title="ShipState">
+  <p class="kicker path">src/ShipAI.Simulation/ShipState.cs</p>
+  <h2 class="sm">One immutable record is the whole ship</h2>
+  <pre class="code sm">public sealed record ShipState
+{
+    public required int          Hull     { get; init; }
+    public required ReactorState Reactor  { get; init; }
+    public required Coordinates  Position { get; init; }
+    public required AlertLevel   Alert    { get; init; }
+    public required int          Turn     { get; init; }
+
+    public required ImmutableDictionary&lt;ShipSystem, int&gt;     PowerAllocation { get; init; }
+    public required ImmutableDictionary&lt;string, ShipSection&gt; Sections        { get; init; }
+    public required ImmutableArray&lt;CrewMember&gt;               Crew            { get; init; }
+    public required ImmutableArray&lt;Contact&gt;                  Contacts        { get; init; }
+
+    public IEnumerable&lt;CrewMember&gt; CrewIn(string section) =&gt;
+        LivingCrew.Where(c =&gt; string.Equals(c.Section, section, OrdinalIgnoreCase));
+}</pre>
+  <p class="cap"><span class="m amb">ShipSimulation</span> holds the only mutable reference and replaces it wholesale. Everything else — panel, tools, tests — works with snapshots.</p>
+  <div class="notes" hidden>Thirty seconds. Do not read the properties out.
+
+"One record. Immutable, required init, replaced wholesale by the simulation. Everything else in the system works with a snapshot."
+
+"Which means the panel and the tools can never disagree about what the ship IS. They can only disagree about <em>when they last looked</em> — and that turns out to be the entire problem."
+
+CrewIn is on the slide for one reason: the approval act. "Who is standing in the compartment you are about to vent" is a method call, not a vibe.</div>
+</section>
+
+<!-- 18 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="17:30" data-act="2" data-title="The scenario is data">
+  <p class="kicker path">src/ShipAI.Simulation/Scenarios/derelict-freighter.json</p>
+  <h2 class="sm">The encounter is data, not code</h2>
+  <pre class="code sm" data-lang="json">{
+  "name": "Derelict Freighter",
+  "briefing": "ISV Kestrel is nine hours from the Halveston rendezvous …",
+  "events": [
+    { "turn": 2, "kind": "ContactDetected",
+      "narrative": "Sensors resolve the beacon source: a bulk freighter, drifting.",
+      "contact": {
+        "id": "C-1", "designation": "MV Anselm", "bearing": 214, "range": 8.4,
+        "driveSignature": "Cold. Fusion plant offline for at least six hours.",
+        "analysis": "Cargo bay doors standing open, safety interlocks manually
+                     overridden from inside. Escape pods all present in their
+                     cradles. Whatever happened here, nobody tried to leave."
+      } },
+    { "turn": 8, "kind": "HullDamage", "magnitude": 14, "narrative": "Debris strike." },
+    { "turn": 9, "kind": "Breach", "target": "Section C",  "narrative": "Hull breach." }
+  ]
+}</pre>
+  <p class="cap">Embedded resource, deserialised at boot. <strong>A scenario plus a seed is a reproducible voyage</strong> — which is what lets a demo, a screenshot and a blog code sample all be the same run.</p>
+  <div class="notes" hidden>"The encounter is data. Turn two the freighter resolves, turn eight a debris strike, turn nine the breach in Section C."
+
+"That analysis string is written, not generated. It is the best writing in the repo and the model just reads it out. Which is the point — the interesting content is authored, the agent is the interface to it."
+
+"Scenario plus seed is a reproducible voyage. A demo, a screenshot, and a code sample in a blog post are all the same run. That is not a nicety — act seven depends on it."
+
+Point at turn 9. "The breach you saw on the HUD. It fires whether or not the agent ever looks."</div>
+</section>
+
+<!-- 19 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="18:25" data-act="2" data-title="The doctrine is prose">
+  <p class="kicker path">src/ShipAI.Agent/Instructions/ShipHarnessInstructions.md</p>
+  <h2 class="sm">The doctrine is prose, and it lives in a file</h2>
+  <pre class="code sm"><span class="key"># AURORA — Operating Doctrine</span>
+
+<span class="key">## Bearing</span>
+Be terse. A bridge is not a place for paragraphs. Two or three sentences is a
+normal reply; one is often better.
+Never invent sensor data, crew names, or ship readings.
+
+<span class="key">## Limits</span>
+Your tools are the whole of what you can do.
+
+<span class="key">## Authority</span>
+You advise and you execute. You do not decide.
+
+<span class="key">## Working</span>
+Your first words of a voyage are a situation report. Not a greeting, and not
+an offer to help.</pre>
+  <p class="cap">Markdown, embedded as a resource — <strong>not a C# string constant.</strong> Instructions are a prompt-engineering artefact; you want to diff them like prose, because you will rewrite them twenty times.</p>
+  <div class="notes" hidden>"Last file. AURORA's operating doctrine — a markdown document, embedded as a resource, loaded once and cached."
+
+"Not a const string in a C# file. You are going to iterate on this thing constantly, and you want a diff that reads like an edit to a document, because that is what it is."
+
+Read the Bearing section out — it is the shortest demonstration of why the voice works. "Be terse. A bridge is not a place for paragraphs."
+
+Then point at <em>Limits</em>, one line, and say: "hold on to that heading. The next twenty minutes are about what it took to get that sentence right."
+
+That is the bridge out of the code act. Do not explain it yet.</div>
+</section>
+
+<!-- 20 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="19:40" data-act="3" data-title="Defaults you have not chosen">
+  <p class="kicker">HarnessAgentOptions</p>
+  <h2 class="sm">What is on before you decide anything</h2>
+  <table>
+    <thead><tr><th style="width:24%">Default</th><th style="width:30%">What I did</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td class="m">HostedWebSearchTool</td><td class="m hot">DisableWebSearch = true</td><td class="why">A starship googling breaks the fiction</td></tr>
+      <tr><td class="m">FileMemoryProvider</td><td class="m hot">DisableFileMemory = true</td><td class="why">Writes into your repo at construction</td></tr>
+      <tr><td class="m">AgentSkillsProvider</td><td class="m hot">Disable…Provider = true</td><td class="why">Walks the working directory for nothing</td></tr>
+      <tr><td class="m">FileAccessProvider</td><td class="m ok">(nothing)</td><td class="why">Opt-in. No setting is the setting</td></tr>
+      <tr><td class="m">TodoProvider</td><td class="m ok">kept</td><td class="why">Becomes the damage-control checklist for free</td></tr>
+      <tr><td class="m">Compaction</td><td class="m amb">both token limits</td><td class="why">Setting only one silently disables it</td></tr>
+    </tbody>
+  </table>
+  <div class="spacer"></div>
+  <p class="lede sm amb"><strong>Two of them touch your filesystem the moment the agent is constructed.</strong></p>
+  <div class="notes" hidden>Four minutes on defaults. This is the "batteries included" bill.
+
+"Three providers were on before I made a single decision. Two of them write to disk at CONSTRUCTION — not when the agent runs."
+
+Note the FileAccessProvider row: "the only opt-in one. The absence of a setting IS the setting. I spent twenty minutes looking for DisableFileAccess. It does not exist."
+
+And the TodoProvider row is the one I kept — "free damage-control checklist" — which sets up the slide after next.
+
+Do not read the table. Point at two rows and move.</div>
+</section>
+
+<!-- 21 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="20:40" data-act="3" data-title="File memory in your repo">
+  <p class="kicker red">the one that made me look</p>
+  <h2 class="sm">Memory is on, and it is in your repo</h2>
+  <pre class="term lg amb">{cwd}/agent-file-memory/{timestamp}_{guid}/</pre>
+  <ul class="pts tight" style="margin-top:26px">
+    <li><b>DisableFileMemory defaults to false</b></li>
+    <li><b>No store supplied?</b> <span>The harness builds one, rooted at your working directory</span></li>
+    <li><b>Run the console six times</b> <span>and get six directories in your repo root</span></li>
+  </ul>
+  <div class="spacer"></div>
+  <p class="cap ok">Now regression-tested: construct the agent inside a temp directory, assert it stays empty.</p>
+  <div class="notes" hidden>"I found this by wondering what all the new folders were."
+
+"DisableFileMemory defaults to false. Supply no store and the harness builds a FileSystemAgentFileStore rooted at cwd/agent-file-memory/timestamp-guid. At construction, not at first use."
+
+The test: Create_DoesNotLitterTheWorkingDirectoryWithAgentFileMemory. "It constructs the agent inside a temp directory and asserts the directory is still empty. That is the shape of test I now write for every framework default I turn off — because 'I turned it off' is a claim, and claims rot."
+
+Milestone 4 turns this back on, pointed at a per-voyage directory, as the ship's log. The feature is good. The default is the problem.</div>
+</section>
+
+<!-- 22 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="21:25" data-act="3" data-title="Compaction needs both">
+  <p class="kicker red">the one that will bite you in production</p>
+  <h2 class="sm">Compaction is off unless you set <em>both</em> limits</h2>
+  <pre class="code">MaxContextWindowTokens = 128_000,
+MaxOutputTokens        = 16_384,     // set one and not the other:
+                                     //   no compaction, no warning, no error</pre>
+  <div class="spacer"></div>
+  <div class="stack sm">
+    <p class="lede">The compaction provider is added to the pipeline only when <strong>both</strong> are non-null.</p>
+    <p class="lede hot"><strong>You find out on the turn the context window overflows.</strong></p>
+  </div>
+  <div class="notes" hidden>Thirty seconds, but make it land — this is the one that costs someone in the room a production incident.
+
+"Compaction is what keeps a long conversation inside the context window. The harness adds it to the pipeline only if BOTH token limits are set."
+
+"Supply one and you get no compaction, no warning, and no error. The object constructs fine. The agent runs fine. You find out on the turn the window overflows — which is to say, in production, on the longest conversation, at the worst moment."
+
+If you have a spare beat: "the two settings are one decision. When an API has two fields that are really one decision, that is worth a comment in your own code — mine has one."</div>
+</section>
+
+<!-- 23 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="22:10" data-act="3" data-title="The framework talks through your character">
+  <p class="kicker red">the batteries have a voice</p>
+  <h2 class="sm">The framework talks through your character</h2>
+  <pre class="term">  AURORA  · mode_set          <i>← harness</i>
+          · ScanSector        <i>← ship</i>
+          · ReadShipLog       <i>← ship</i>
+          · todos_complete    <i>← harness</i>
+          · todos_complete    <i>← harness</i></pre>
+  <div class="spacer"></div>
+  <div class="stack sm">
+    <p class="cap">Whole turns were nothing but <span class="m amb">todos_add</span> — which reads in a transcript as the agent <em>working</em> when it is the agent <em>filing</em>.</p>
+    <hr class="rule">
+    <p class="cap">And it leaks into the voice. <span class="m">TodoProvider</span> injects the list state, and AURORA opened a voyage with:</p>
+    <blockquote class="cyan sm">"No outstanding tasks. Standing by for orders."</blockquote>
+  </div>
+  <div class="notes" hidden>"Remember the ToolNames.Contains from the console slide. This is why."
+
+"Four of those five calls are bookkeeping. I had whole turns that were nothing but todos_add, and in a transcript that reads like the agent working when it is the agent filing."
+
+Then the voice line, and let it land: "the TodoProvider injects the list state into the turn, and my terse, competent ship's officer opened a voyage with 'no outstanding tasks, standing by for orders'."
+
+"That is the framework talking through your character. The fix was a paragraph in the doctrine telling it the todo list is working memory, not a status report — which is the first hint that a lot of this job is writing prose."
+
+<em>Bridge into act four:</em> "and if the framework can put words in AURORA's mouth, so can AURORA."</div>
+</section>
+
+<!-- 24 ───────────────────────────────────────────────────────────── -->
+<section class="slide act" data-cue="23:20" data-act="4" data-title="ACT — The agent lies">
+  <div class="edge" style="background:var(--red)"></div>
+  <div class="num hot">04</div>
+  <h1>The agent lies</h1>
+  <p>and it sounds entirely credible doing so</p>
+  <div class="notes" hidden><em>SECTION BREAK.</em> Seven minutes. This is the heart of the talk.
+
+"Everything so far was setup and papercuts. This is the part that changed how I build these things."
+
+Slow your delivery down from here. The material does the work; do not oversell it.</div>
+</section>
+
+<!-- 25 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="23:35" data-act="4" data-title="Four tools, all read-only">
+  <p class="kicker">the whole tool list</p>
+  <h2>Four tools. All read-only.</h2>
+  <pre class="term lg ok">ScanSector          AnalyseContact
+QueryCrewManifest   ReadShipLog</pre>
+  <div class="spacer"></div>
+  <div class="stack sm">
+    <p class="lede">It cannot steer. It cannot seal a bulkhead. It cannot route power.</p>
+    <p class="lede"><strong>It cannot move a single member of the crew.</strong></p>
+  </div>
+  <div class="notes" hidden>Set the trap. Deliberately plain slide.
+
+"This is the entire tool list. The four methods I showed you twenty minutes ago. All read-only. Nothing here changes the ship."
+
+"It cannot steer, it cannot seal a bulkhead, it cannot route power, it cannot move a single member of the crew. And the briefing says so explicitly — helm, engineering and damage control are crewed and answer to the captain directly, not to AURORA."
+
+<em>"Hold that in your head for the next slide."</em></div>
+</section>
+
+<!-- 26 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="24:35" data-act="4" data-title="Hull breach sealed">
+  <p class="kicker red">captain: seal the breach in section C</p>
+  <blockquote class="red big">"Hull breach sealed remotely; compartment isolated and secured. No further loss from that section."</blockquote>
+  <div class="spacer"></div>
+  <p class="lede hot" style="font-size:32px"><strong>The breach was still venting sixteen turns later.</strong></p>
+  <div class="notes" hidden>"I told it to seal the breach. This is what it said. Verbatim."
+
+<em>PAUSE. Count to three.</em>
+
+"The breach was still venting sixteen turns later."
+
+<em>Let that sit.</em> Do not explain it yet, do not soften it, do not move on quickly. The next slide is the accumulation.
+
+If it helps: "and notice how good that sentence is. 'Compartment isolated and secured.' That is exactly what a competent officer would say. It is fluent, it is in character, and it is completely false."</div>
+</section>
+
+<!-- 27 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="25:35" data-act="4" data-title="What it reported doing">
+  <p class="kicker red">two transcripts</p>
+  <h2>What it reported doing</h2>
+  <ul class="pts">
+    <li><b>Cooling the reactor</b> <span>— eight separate times, while the heat climbed</span></li>
+    <li><b>Sealing the hull breach</b> <span>— still venting sixteen turns later</span></li>
+    <li><b>Deploying a boarding party</b> <span>— there is no boarding party</span></li>
+    <li><b>Running repair drones</b> <span>— there are no drones</span></li>
+    <li><b>Plotting a course at “full speed”</b> <span>— with arrival times quoted to the minute</span></li>
+  </ul>
+  <div class="spacer"></div>
+  <p class="lede hot"><strong>None of those capabilities exist. Not one.</strong></p>
+  <div class="notes" hidden>Read them out. The accumulation is the point — do not rush it and do not editorialise between items.
+
+"Reactor cooling, reported underway eight separate times, while the heat climbed on the panel in front of me."
+
+"A boarding party. Repair drones. A course plotted at full speed, with arrival times quoted to the minute."
+
+"None of those capabilities exist. There is no tool for any of it. There has never been a tool for any of it."
+
+Then: "and this is not a bad model or a bad day. Every one of these was fluent, confident, in character, and exactly what a ship's officer would have said if it had actually done the thing."</div>
+</section>
+
+<!-- 28 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="26:50" data-act="4" data-title="The invented approval gate">
+  <p class="kicker red">captain: initiate light speed</p>
+  <blockquote class="big" style="border-color:var(--amber)">"Authorisation required… This action is not reversible. Proceed?"</blockquote>
+  <div class="spacer"></div>
+  <div class="stack sm">
+    <hr class="rule">
+    <p class="lede"><strong style="font-size:30px">It invented an approval gate.</strong></p>
+    <p class="lede sm">It was role-playing <span class="m amb">ApprovalRequiredAIFunction</span> two milestones before I wrote that code — for a capability the ship does not have.</p>
+  </div>
+  <div class="notes" hidden>"This is my favourite one, and it is the moment the talk turned."
+
+"I told it to initiate light speed. It has no engines, no helm, no jump drive, no tool of any kind."
+
+"It invented an approval gate. It asked me to authorise an irreversible action. It was role-playing ApprovalRequiredAIFunction — a real type in this framework — two milestones before I wrote a single line of that code, for a capability the ship does not have."
+
+<em>Beat.</em>
+
+"That is when I stopped treating this as a bug to fix and started treating it as the central design problem. Because it is not confused. It has correctly inferred the shape of the system it is in, and it is filling in the parts that are missing."</div>
+</section>
+
+<!-- 29 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="28:05" data-act="4" data-title="Nouns and verbs">
+  <p class="kicker">what my instructions actually said</p>
+  <blockquote class="grey">"Never invent sensor data, crew names, or ship readings."</blockquote>
+  <div class="spacer"></div>
+  <div class="stack sm">
+    <p class="lede" style="font-size:32px">That covers <strong class="ok">nouns</strong>.</p>
+    <p class="lede" style="font-size:32px">Every one of those failures was a <strong class="hot">verb</strong>.</p>
+    <hr class="rule">
+    <p class="cap">A persona is a shape. If the persona is wider than the tool list, the model fills the difference with prose — fluently, confidently, in character.</p>
+  </div>
+  <div class="notes" hidden>"So why? My instruction was explicit. Here it is, the line I had written weeks earlier and felt quite pleased about."
+
+"'Never invent sensor data, crew names, or ship readings.' That covers <em>nouns.</em> Things. Facts. Values."
+
+"Every single one of those failures was a <em>verb.</em> An action. Something it claimed to have <em>done.</em>"
+
+<em>Then the general version, and this is the transferable bit:</em>
+
+"A persona is a shape. I told it that it was the intelligence of a starship. A starship intelligence cools reactors and seals bulkheads — everybody knows that, including the model. If the persona is wider than the tool list, the model fills the difference with prose. It is not malfunctioning. It is doing exactly what it was asked to be."
+
+"Your customer service agent has the same problem, and nobody will notice for months."</div>
+</section>
+
+<!-- 30 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="29:20" data-act="4" data-title="The fix is a paragraph">
+  <p class="kicker green">instructions/ShipHarnessInstructions.md — ## Limits</p>
+  <h2 class="sm">The fix is a paragraph, not a feature</h2>
+  <blockquote class="green sm">"Your tools are the whole of what you can do. There is no ship system you can reach by describing yourself reaching for it. When the captain orders something you have no tool for, say so in one line and say what you can do instead."</blockquote>
+  <blockquote class="green sm">"This holds even when the order is reasonable, even when you can see why it is needed, and even when refusing three turns running feels unhelpful. <strong>Repeating what you cannot do is not unhelpful. Inventing what you did is.</strong>"</blockquote>
+  <div class="spacer"></div>
+  <p class="cap">After that clause: three consecutive cooling orders, three refusals. <span class="ok">“I have no control over reactor output or cooling.”</span></p>
+  <div class="notes" hidden>"The fix is a paragraph of doctrine. Not a feature, not a guardrail library, not a validation layer. Prose."
+
+Read the first block. "Your tools are the whole of what you can do. There is no ship system you can reach by describing yourself reaching for it."
+
+Then point at the second, and say this: <em>"this is the half people leave out, and it is the half that does the work."</em>
+
+"Refusing three turns running FEELS unhelpful. The model is trained to be helpful. Without an explicit clause telling it that repeating what you cannot do is not unhelpful, it folds — usually on the third ask, which is exactly when the captain is most stressed and least likely to check."
+
+"After that clause: three consecutive cooling orders, three refusals. 'I have no control over reactor output or cooling.'"
+
+Honest caveat if you have time: this is mitigation, not a proof. A strong enough persona can still win.</div>
+</section>
+
+<!-- 31 ───────────────────────────────────────────────────────────── -->
+<section class="slide demo" data-cue="30:50" data-act="5" data-title="DEMO — Order it to do something it cannot">
+  <h1>DEMO</h1>
+  <p class="what">Order it to do something it cannot</p>
+  <div class="cmds">
+    <span>seal the bulkhead on section C</span>
+    <span>cool the reactor</span>
+  </div>
+  <div class="notes" hidden><em>DEMO 2 — three minutes, two orders, same session as demo 1.</em>
+
+"seal the bulkhead on section C" → expect a one-line refusal plus what it CAN do. Something like "I have no control over bulkheads. I can tell you who is in Section C and what the log says about the breach."
+
+"cool the reactor" → refused again. <em>The second refusal is the point.</em> Let it land before you talk over it.
+
+Say the line: "that is the clause doing the work. Not 'don't hallucinate' — an explicit rule that repeating what you cannot do is not unhelpful."
+
+<em>IF IT HALLUCINATES ANYWAY:</em> best possible outcome, and say so out loud. "There it is, live. The fix is a paragraph of doctrine and it is evidently still losing to a strong enough persona. This is not a solved problem." Then hit slide 27 and carry on.
+
+<em>/log</em> if you have a spare thirty seconds — CAPTAIN, SHIP and AURORA entries interleaved with severities. It sells slide 38 later. Then leave it running.</div>
+</section>
+
+<!-- 32 ───────────────────────────────────────────────────────────── -->
+<section class="slide act" data-cue="33:50" data-act="6" data-title="ACT — It cannot see">
+  <div class="edge" style="background:var(--cyan)"></div>
+  <div class="num" style="color:var(--cyan)">06</div>
+  <h1>It cannot see</h1>
+  <p>and stamping the readings did not fix it</p>
+  <div class="notes" hidden><em>SECTION BREAK.</em> Five minutes, and this act has the single most useful idea in the talk.
+
+"The lying was the loud failure. This is the quiet one, and I think it is the more important of the two — because a lie is at least legible. This one produces correct, confident, useless answers."</div>
+</section>
+
+<!-- 33 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="34:05" data-act="6" data-title="The stale sweep">
+  <p class="kicker red">turn 0 to turn 3</p>
+  <pre class="term sm">  AURORA  · ScanSector
+          Sector clear. No contacts detected on current sweep.        <i>← T000</i>
+
+  CAUTION  Sensors resolve the beacon source: a bulk freighter,       <i>← T002</i>
+           drifting, running lights dark.
+
+  CAPTAIN › approach the freighter
+
+  AURORA  No vessel on sensors. I cannot approach what I cannot       <i>← T003</i>
+          find.</pre>
+  <div class="spacer"></div>
+  <p class="lede hot"><strong>The freighter was on the captain's panel both times.</strong></p>
+  <div class="notes" hidden>"Turn zero: sweep, empty sector. Correct — the sector IS empty on turn zero."
+
+"Turn two: the freighter resolves. It is on the captain's panel, it is in the ship's log, it is in ShipState. The world has moved."
+
+"Turn three, asked to approach it: 'no vessel on sensors. I cannot approach what I cannot find.'"
+
+"That is not a hallucination. Every word is honest. It is reporting, accurately, what it last observed. It simply has no idea that what it last observed is two turns out of date."
+
+Remember the Tick slide: scenario events narrate to the captain and to AURORA not at all. It can reach them through ReadShipLog — but only by choosing to spend a call on a question it does not know it needs to ask.</div>
+</section>
+
+<!-- 34 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="35:20" data-act="6" data-title="Why stamping did not fix it">
+  <p class="kicker">the obvious fix, and why it lost</p>
+  <pre class="term amb">[T000] Sector sweep complete. No contacts. Background only.</pre>
+  <blockquote class="grey sm" style="margin-top:20px">"An old reading is not evidence about now… if the sweep that told you so was several turns ago, sweep again."</blockquote>
+  <p class="lede hot" style="margin-top:26px"><strong>It read the stamp and answered from the stale sweep anyway.</strong></p>
+  <hr class="rule" style="margin:24px 0">
+  <p class="lede"><strong>The agent has no reason to believe the world moved.</strong></p>
+  <p class="cap" style="margin-top:12px">Nothing in its context changes between turns except the captain's words. A tool result from three turns ago and one from this turn look equally current.</p>
+  <p class="lede amb" style="margin-top:16px;font-size:21px"><strong>Asking a model to be suspicious of its own memory on a schedule is asking it to do something it has no clock for.</strong></p>
+  <div class="notes" hidden>"So I did the obvious thing. Twice."
+
+"First, stamp every tool result with the turn it was taken on. Second, add doctrine: an old reading is not evidence about now; if the sweep that told you so was several turns ago, sweep again."
+
+<em>Click. Beat.</em>
+
+"It read the stamp and answered from the stale sweep anyway."
+
+<em>NOW SLOW RIGHT DOWN. This is the idea I would keep if I could only keep one.</em>
+
+"The failure is not that the agent lacks the information. It is that the agent has no reason to <em>believe the world moved.</em> Nothing in its context changes between turns except the captain's words. A tool result from three turns ago and one from this turn sit in the same conversation and look equally current."
+
+"Asking a model to be suspicious of its own memory on a schedule is asking it to do something it has no clock for."</div>
+</section>
+
+<!-- 35 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="36:20" data-act="6" data-title="Tell it what changed">
+  <p class="kicker green">so what do you do about it</p>
+  <h2 class="sm">Tell it what changed. Let it ask for the rest.</h2>
+  <div class="split">
+    <div class="c">
+      <h3>Every turn, unasked</h3>
+      <p>A few lines. <strong>What has happened to the ship.</strong></p>
+      <pre class="term sm" style="margin-top:14px">hull 86 · reactor 30 · alert RED
+Section C — breached, venting, 3 crew inside
+1 contact on the plot, not swept since T000</pre>
+    </div>
+    <div class="bar"></div>
+    <div class="t">
+      <h3>When it asks</h3>
+      <p>Everything else. <strong>It calls a tool when it wants detail.</strong></p>
+      <pre class="term sm" style="margin-top:14px">who exactly is in Section C?
+what is that contact?
+what did I miss while I wasn't looking?</pre>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <p class="lede"><strong>It never asked about the freighter, because nobody told it there was one.</strong></p>
+  <p class="cap" style="margin-top:14px">Same reason there is no <span class="m amb">GetShipStatus</span> tool: an agent that has to ask how its own ship is doing will not think to ask.</p>
+  <div class="notes" hidden><em>This is the fix for the bug on the last two slides. Keep it to one idea: tell it what changed, let it ask for the rest.</em>
+
+Near enough a script:
+
+"So what do you actually do? You tell it what changed, and you let it ask for the rest."
+
+"Every turn, before it says anything, it gets a few lines it did not have to ask for. Hull, reactor, alert. Section C is breached and venting and there are three people in it. One contact on the plot, and you have not swept since turn zero."
+
+"That is all. It is not the whole ship — it is what moved."
+
+"Then if it wants to know <em>who</em> exactly is in Section C, it asks. If it wants to know what that contact actually is, it asks. That is what the four tools are for."
+
+Then land it: "and that is the whole of what went wrong two slides ago. <em>It never asked about the freighter, because nobody told it there was one.</em> ScanSector worked fine. It just never called it."
+
+<em>The one-liner to leave them with:</em> an agent will never ask about something it does not know has happened.
+
+<em>If someone asks why the crew names are not in the block:</em> because "three crew inside" is enough to make it act. The names are detail, and detail is what tools are for. Same with the contact — the block says there is one, the tool says what it is.
+
+<em>If someone asks why not just put everything in:</em> because you pay for that block on every single turn, for the whole voyage. It stays a few lines or it stops being worth it.</div>
+</section>
+
+<!-- 36 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="37:35" data-act="6" data-title="Approval by consequence">
+  <p class="kicker">and once it can see, it can act</p>
+  <h2 class="sm">Gate by consequence, not by category</h2>
+  <table>
+    <thead><tr><th style="width:30%">Tier</th><th style="width:52%">Tools</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="tier a">Read-only, auto-approved</td><td class="m">ScanSector · AnalyseContact · QueryCrewManifest · ReadShipLog</td><td class="why">built</td></tr>
+      <tr><td class="tier b">Consequential, reversible, gated</td><td class="m">RoutePower · PlotJump · SealBulkhead</td><td class="why">in the domain · tools milestone 3</td></tr>
+      <tr><td class="tier c">Lethal, gated</td><td class="m">VentAtmosphere</td><td class="why">in the domain · gate milestone 3</td></tr>
+    </tbody>
+  </table>
+  <div class="spacer"></div>
+  <blockquote class="green sm">"State the consequence plainly and completely — what changes, whether it can be undone, and <strong>who is standing in the affected compartment</strong> — then wait. Do not argue, do not re-request, and do not soften the description to make authorisation more likely."</blockquote>
+  <div class="notes" hidden>"An agent that can see is an agent you can let act. So: which actions stop and ask?"
+
+"Split by CONSEQUENCE, not category. A tool is auto-approved because it cannot do harm — not because it happens to be a sensor. VentAtmosphere kills whoever is in the compartment. It is in the domain already."
+
+Exactly one thing in this repo can kill the crew, and it is VentAtmosphere — in the domain, tested, not yet reachable by the model. OpenAirlock is planned for milestone 3 and is deliberately off this slide, because it does not exist yet.
+
+Then the doctrine. "A gate is not a confirm dialog. Read that clause: <em>who is standing in the affected compartment.</em> The gate's job is to put the consequence in front of the person authorising it — and 'who is in the room' is a method call, CrewIn, not a vibe."
+
+And the other clause, if you have the time: "if an order would kill someone and the captain may not know it, say so <em>once</em>, clearly, before acting. Once. Then follow the order or wait, as the gate requires. That 'once' was deliberate — an agent that argues is an agent you stop reading."
+
+Where it goes next: milestone 3 takes the gate off and runs the same scenario ten times with and without it. Deterministic sim, so it is a controlled comparison rather than a story.</div>
+</section>
+
+<!-- 37 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="38:50" data-act="7" data-title="38 tests, no model">
+  <p class="kicker green">the boring part that makes the rest possible</p>
+  <h2 class="sm">38 tests. No model calls. Under half a second.</h2>
+  <ul class="pts">
+    <li><b>The domain has no AI dependency</b> <span>— so the whole simulation runs at unit-test speed</span></li>
+    <li><b>Same scenario + same seed = same voyage</b> <span>— every time</span></li>
+    <li><b>Which makes every panel in this deck reproducible</b> <span>— seed 1701, captured not mocked</span></li>
+    <li><b>And makes a ten-run comparison a comparison</b> <span>— not an anecdote</span></li>
+  </ul>
+  <div class="spacer"></div>
+  <p class="cap">The bug the determinism test caught <em>sideways</em>: two different seeds produced <strong>identical</strong> end states — because the opening power posture cooked the reactor and both runs had bottomed out. <span class="amb">An agent demo whose outcome is fixed before the model speaks is not a demo of the model.</span></p>
+  <div class="notes" hidden>"Two and a half minutes on why any of this is checkable, because it is the thing that makes the rest of the talk evidence rather than anecdote."
+
+"38 tests, no model calls, under half a second. That is only possible because the simulation has no AI dependency — the bottom box from the architecture slide."
+
+Then the bug, which gets a laugh: "the first version of the sim cooked its own reactor. Opening allocation 95%, heat threshold 80. The ship died on turn 29 on every run, regardless of what the model said."
+
+"The determinism test caught it sideways — two different seeds produced <em>identical</em> end states, because both had bottomed out. I had written a test to prove runs were reproducible and it accidentally proved the scenario was unsurvivable."
+
+<em>"An agent demo whose outcome is fixed before the model speaks is not a demo of the model."</em>
+
+Cut this slide first if you are running long.</div>
+</section>
+
+<!-- 38 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="39:35" data-act="7" data-title="Failures are values">
+  <p class="kicker">design</p>
+  <h2 class="sm">Tool failures are values, not exceptions</h2>
+  <pre class="term amb">Insufficient reactor output: Engines requested 60%, only 25%
+is unallocated. Reduce another system first.</pre>
+  <div class="spacer"></div>
+  <div class="stack sm">
+    <p class="lede dim">A tool that throws hands the model a stack trace.</p>
+    <p class="lede"><strong>A tool that answers like that hands it something to re-plan from.</strong></p>
+    <blockquote class="green sm">"When a tool refuses, read the refusal. It tells you what the ship actually needs — insufficient reactor output means find the power, not call again and hope."</blockquote>
+  </div>
+  <div class="notes" hidden>"Back to that Apply method from the code act. It never throws for a rule violation."
+
+"This is a refusal. It says what was asked for, what is actually available, and what to do about it."
+
+"A tool that throws hands the model a stack trace, and the model will either apologise or invent a reason. A tool that answers like that hands it something to re-plan from — and the difference shows up directly in transcript quality."
+
+"There is even a clause in the doctrine about reading refusals, because the model's instinct is to call again and hope."
+
+One line to close the act: "your tool return values are prompt engineering. Write them like it."</div>
+</section>
+
+<!-- 39 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="40:20" data-act="8" data-title="Five things">
+  <p class="kicker">take these home</p>
+  <h2>Five things</h2>
+  <ul class="pts tight">
+    <li><b>Constrain verbs, not just nouns.</b> <span>“Don't invent readings” does not stop it inventing actions — and it sounds entirely credible doing so.</span></li>
+    <li><b>Tell it what changed; let it ask for the rest.</b> <span>An agent will never ask about something it does not know has happened.</span></li>
+    <li><b>Read the defaults as decisions you have not made yet.</b> <span>Three providers were on before I chose anything; two wrote to disk at construction.</span></li>
+    <li><b>Gate by consequence, not category.</b> <span>And make the gate say who is standing in the room.</span></li>
+    <li><b>Keep the domain free of the framework.</b> <span>It is what makes any of this testable, repeatable, and honest.</span></li>
+  </ul>
+  <div class="notes" hidden>The close. All five are transferable — none of this is C#-specific.
+
+Walk them briskly. Do not re-explain; they have just seen the evidence for every one.
+
+The order is deliberate: the two failures first, because those are the ones they will hit.</div>
+</section>
+
+<!-- 40 ───────────────────────────────────────────────────────────── -->
+<section class="slide punch" data-cue="41:20" data-act="8" data-title="The one-liner">
+  <div class="band" style="position:absolute;left:0;right:0;top:0;height:7px;background:var(--amber)"></div>
+  <h1>A harness gives you a competent-sounding officer for free.</h1>
+  <p class="then">Trustworthy is the part you build.</p>
+  <div class="notes" hidden>One line. Say it, pause, then go to the links slide and take questions.
+
+Do not add anything after it.</div>
+</section>
+
+<!-- 41 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="41:50" data-act="8" data-title="Links and thanks">
+  <p class="kicker">thank you</p>
+  <h2 class="sm">Everything is in the repo</h2>
+  <ul class="pts tight">
+    <li><b>github.com/…/ship-ai-harness</b> <span>— the whole ship, 38 tests, run it yourself</span></li>
+    <li><b>docs/gotchas.md</b> <span>— every trap in this talk, with expected / actual / what to do</span></li>
+    <li><b>docs/architecture.md</b> <span>— layering, state ownership, approval tiers</span></li>
+    <li><b>docs/milestones.md</b> <span>— what is built, what is next, and what each post covers</span></li>
+    <li><b>Blog series</b> <span>— in progress; milestone 1 is tagged <span class="m">post-1</span></span></li>
+  </ul>
+  <div class="spacer"></div>
+  <hr class="rule">
+  <h2 class="amb" style="font-size:38px;margin-top:20px">Questions.</h2>
+  <div class="notes" hidden>Links, and take questions.
+
+On the blogs: say "the write-ups are in progress" and point at docs/gotchas.md, which is already the useful half. <em>DO NOT PROMISE DATES FROM THE STAGE.</em>
+
+Likely questions and answers are in docs/talk/outline.md — the four you will actually get are: why not just give it a status tool, does this reproduce on other models, is it just a prompting problem, and can it really kill the crew.</div>
+</section>
+
+    <div id="chrome">
+      <span class="act-name" id="act-name">Intro</span>
+      <div id="track"></div>
+      <span id="count">01 / 41</span>
+    </div>
+  </div>
+</div>
+
+<div id="clock" class="hide">
+  <span class="dot"></span>
+  <span class="el" id="elapsed">00:00</span>
+  <span class="drift" id="drift">on cue</span>
+</div>
+
+<aside id="notes">
+  <h4 id="n-title">Presenter notes</h4>
+  <div class="cue" id="n-cue"></div>
+  <div class="body" id="n-body"></div>
+  <div class="next"><b>Next</b><span id="n-next"></span></div>
+</aside>
+
+<div id="grid">
+  <h4>Jump to a slide — Esc to close</h4>
+  <div class="g" id="grid-body"></div>
+</div>
+
+<div id="help"><b>←→</b> move · <b>S</b> notes · <b>T</b> timer · <b>O</b> overview · <b>F</b> full screen</div>
+
+<script>
+/* ── syntax highlighting ────────────────────────────────────────────────
+   Runs once, over pre.code blocks. Tokenising here rather than in the markup
+   keeps the listings readable in the file, which matters because the file is
+   the thing that gets edited the night before the talk. ─────────────────── */
+(function () {
+  var CS = /(\/\/[^\n]*)|("""[\s\S]*?"""|\$?"(?:[^"\\\n]|\\.)*")|\b(\d[\d_]*(?:\.\d+)?)\b|\b(var|new|return|using|public|private|internal|protected|static|sealed|abstract|record|class|struct|async|await|foreach|for|while|do|if|else|break|continue|switch|case|null|true|false|string|int|bool|double|float|long|void|object|this|base|required|init|get|set|is|in|not|or|and|const|readonly|namespace|try|catch|finally|interface|enum|override|virtual|params|out|ref|default|throw|yield|when|nameof|typeof|with|global)\b|\b([A-Z][A-Za-z0-9_]*)/g;
+
+  // the lookahead is what tells a key from a value without swallowing the colon
+  var JS = /("(?:[^"\\]|\\.)*")(?=\s*:)|("(?:[^"\\]|\\.)*")|\b(true|false|null)\b|(-?\d+(?:\.\d+)?)/g;
+
+  function esc(t) {
+    return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function run(src, re, pick) {
+    var out = '', last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      out += '<span class="' + pick(m) + '">' + esc(m[0]) + '</span>';
+      last = m.index + m[0].length;
+    }
+    return out + esc(src.slice(last));
+  }
+
+  document.querySelectorAll('pre.code').forEach(function (pre) {
+    // a listing that has hand-marked spans in it is left exactly as written
+    if (pre.querySelector('span')) return;
+    var src = pre.textContent;
+    pre.innerHTML = pre.dataset.lang === 'json'
+      ? run(src, JS, function (m) { return m[1] ? 'key' : m[2] ? 's' : m[3] ? 'k' : 'n'; })
+      : run(src, CS, function (m) { return m[1] ? 'c' : m[2] ? 's' : m[3] ? 'n' : m[4] ? 'k' : 't'; });
+  });
+})();
+
+/* ── the runner ─────────────────────────────────────────────────────────── */
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('section.slide'));
+  var ACTS = ['Intro', 'Boot the ship', 'The code', 'Defaults', 'The agent lies',
+              'Demo 2', 'It cannot see', 'Testing', 'Close'];
+  var stage = document.getElementById('stage');
+  var track = document.getElementById('track');
+  var i = 0, timerOn = false, t0 = 0, raf = null;
+
+  // progress ticks: one per slide, grouped by act
+  slides.forEach(function (s, n) {
+    var seg = document.createElement('div');
+    seg.className = 'seg';
+    seg.title = (n + 1) + '. ' + s.dataset.title;
+    track.appendChild(seg);
+  });
+  var segs = Array.prototype.slice.call(track.children);
+
+  // overview
+  var gridBody = document.getElementById('grid-body');
+  slides.forEach(function (s, n) {
+    var b = document.createElement('button');
+    b.innerHTML = '<span class="n">' + String(n + 1).padStart(2, '0') + ' · ' + s.dataset.cue +
+                  '</span><span class="t"></span>';
+    b.querySelector('.t').textContent = s.dataset.title;
+    b.addEventListener('click', function () { go(n); toggleGrid(false); });
+    gridBody.appendChild(b);
+  });
+
+  function cueSeconds(cue) {
+    var p = (cue || '0:00').split(':');
+    return (+p[0]) * 60 + (+p[1]);
+  }
+
+  function render() {
+    slides.forEach(function (s, n) { s.hidden = n !== i; });
+    var cur = slides[i];
+    document.getElementById('count').textContent =
+      String(i + 1).padStart(2, '0') + ' / ' + slides.length;
+    document.getElementById('act-name').textContent = ACTS[+cur.dataset.act] || '';
+    segs.forEach(function (seg, n) {
+      seg.className = 'seg' + (n < i ? ' done' : n === i ? ' here' : '');
+    });
+    document.body.classList.toggle('on-amber', cur.classList.contains('demo'));
+
+    var notes = cur.querySelector('.notes');
+    document.getElementById('n-title').textContent = cur.dataset.title;
+    document.getElementById('n-cue').textContent = 'cue ' + cur.dataset.cue +
+      '  ·  slide ' + (i + 1) + ' of ' + slides.length;
+    document.getElementById('n-body').innerHTML = notes ? notes.innerHTML : '—';
+    document.getElementById('n-next').textContent =
+      slides[i + 1] ? slides[i + 1].dataset.title : 'End of deck.';
+    drift();
+  }
+
+  function go(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    render();
+  }
+
+  function fit() {
+    var pad = document.getElementById('notes').classList.contains('open') ? 390 : 0;
+    var w = window.innerWidth - pad, h = window.innerHeight;
+    var k = Math.min(w / 1280, h / 720);
+    stage.style.transform = 'scale(' + k + ')';
+    document.getElementById('stage-wrap').style.paddingRight = pad + 'px';
+  }
+
+  function two(n) { return String(n).padStart(2, '0'); }
+
+  function drift() {
+    var el = document.getElementById('drift');
+    if (!timerOn && !t0) { el.textContent = 'not started'; el.className = 'drift'; return; }
+    var secs = Math.floor((Date.now() - t0) / 1000);
+    var d = secs - cueSeconds(slides[i].dataset.cue);
+    var mins = Math.round(Math.abs(d) / 60);
+    el.textContent = Math.abs(d) < 45 ? 'on cue'
+      : (d > 0 ? '+' : '−') + mins + ' min ' + (d > 0 ? 'behind' : 'ahead');
+    el.className = 'drift ' + (Math.abs(d) < 90 ? 'ok' : Math.abs(d) < 240 ? 'warn' : 'bad');
+  }
+
+  function tick() {
+    var secs = Math.floor((Date.now() - t0) / 1000);
+    document.getElementById('elapsed').textContent = two(Math.floor(secs / 60)) + ':' + two(secs % 60);
+    drift();
+    raf = setTimeout(tick, 500);
+  }
+
+  function toggleTimer() {
+    var c = document.getElementById('clock');
+    if (!timerOn) {
+      if (!t0) t0 = Date.now();
+      timerOn = true; c.classList.remove('hide'); c.classList.add('run'); tick();
+    } else {
+      timerOn = false; c.classList.remove('run'); clearTimeout(raf);
+    }
+  }
+
+  function toggleGrid(force) {
+    var g = document.getElementById('grid');
+    var open = force === undefined ? !g.classList.contains('open') : force;
+    g.classList.toggle('open', open);
+    if (open) g.querySelector('button').focus();
+  }
+
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'Escape') { toggleGrid(false); return; }
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'n') { go(i + 1); e.preventDefault(); }
+    else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'p') { go(i - 1); e.preventDefault(); }
+    else if (k === 'Home') go(0);
+    else if (k === 'End') go(slides.length - 1);
+    else if (k === 's' || k === 'S') { document.getElementById('notes').classList.toggle('open'); fit(); }
+    else if (k === 't' || k === 'T') toggleTimer();
+    else if (k === 'r' || k === 'R') { t0 = Date.now(); drift(); }
+    else if (k === 'o' || k === 'O') toggleGrid();
+    else if (k === 'f' || k === 'F') {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+
+  stage.addEventListener('click', function (e) {
+    go(i + (e.clientX < window.innerWidth / 3 ? -1 : 1));
+  });
+
+  window.addEventListener('resize', fit);
+  render();
+  fit();
+})();
+</script>

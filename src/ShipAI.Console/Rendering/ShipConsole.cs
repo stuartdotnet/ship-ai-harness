@@ -79,49 +79,58 @@ internal static class ShipConsole
         "read me the log",
     ];
 
-    public static void Banner(string scenarioName, string briefing)
+    /// <summary>
+    /// The opening screen: who the reader is, what has happened, and how to say something.
+    /// </summary>
+    /// <remarks>
+    /// Takes the scenario's <c>Situation</c>, never its <c>Briefing</c>. The briefing is
+    /// AURORA's system prompt and its "you" is AURORA, so printing it here greeted the human
+    /// with "You are running sensors and analysis for this approach" — which reads as though
+    /// the captain is the AI. Everything on this screen now addresses the captain, and AURORA
+    /// is named in the third person throughout.
+    /// </remarks>
+    public static void Banner(string scenarioName, string situation)
     {
         WriteLine();
         Write("  ISV KESTREL", ConsoleColor.White);
-        WriteLine($"  ·  AURORA shipboard intelligence online  ·  {scenarioName}", ConsoleColor.DarkGray);
+        WriteLine($"  ·  {scenarioName}", ConsoleColor.DarkGray);
         WriteLine($"  {new string('━', PanelWidth)}", ConsoleColor.DarkGray);
         WriteLine();
-        WriteWrapped(briefing, ConsoleColor.Gray, indent: 2);
-        WriteLine();
-        WriteLine("  /status  /log  /help  /quit", ConsoleColor.DarkGray);
+        WriteWrapped(situation, ConsoleColor.Gray, indent: 2);
         WriteLine();
         Openers();
+        WriteLine();
+
+        // Lives here rather than in Openers, which /help also calls above its own longer
+        // list of the same four commands.
+        WriteLine("  /status  /log  /help  /quit", ConsoleColor.DarkGray);
     }
 
     /// <summary>
-    /// Example orders for a captain who has just started the app, and AURORA's scope.
+    /// Who AURORA is, what it can do, and three orders that work on the opening turn.
     /// </summary>
     /// <remarks>
-    /// Without this, the first thing a new captain sees is a bare prompt above four slash
-    /// commands, which reads as though the slash commands are the whole interface. Anything
-    /// not prefixed with '/' goes to AURORA as an order, and nothing on screen said so.
-    /// <para>
-    /// The scope line is here because leaving it out cost a whole playthrough. A captain who
-    /// has just been told the ship is in trouble will order it saved, and every one of those
-    /// orders comes back refused: AURORA has sensors and nothing else in this milestone. Saying
-    /// so once, up front, is the difference between a deliberate constraint and a broken app.
-    /// </para>
+    /// Two things have to survive any trim here. Anything not prefixed with '/' is an order to
+    /// AURORA, and nothing else on screen says so — without the examples a new captain reads
+    /// the slash commands as the whole interface. And AURORA's scope, because leaving it out
+    /// cost a whole playthrough: a captain who has just been told the ship is in trouble will
+    /// order it saved, and in this milestone every one of those orders comes back refused.
+    /// Saying so once, up front, is the difference between a deliberate constraint and a
+    /// broken app. Both fit in three lines; the earlier version spent eleven on them, and
+    /// spent four of those repeating the briefing printed directly above it.
     /// </remarks>
     public static void Openers()
     {
-        WriteLine("  Anything that is not a /command is an order to AURORA. Plain English.", ConsoleColor.DarkGray);
+        WriteLine("  AURORA is your shipboard intelligence. It runs sensors and analysis, and", ConsoleColor.DarkGray);
+        WriteLine("  nothing else — it cannot steer, seal, route power or move crew.", ConsoleColor.DarkGray);
+        WriteLine();
+        WriteLine("  Anything that is not a /command is an order to AURORA, in plain English:", ConsoleColor.Gray);
         WriteLine();
 
         foreach (var opener in ExampleOpeners)
         {
             WriteLine($"    {opener}", ConsoleColor.DarkCyan);
         }
-
-        WriteLine();
-        WriteLine("  AURORA runs sensors and analysis. It cannot steer, seal, route power or move", ConsoleColor.DarkGray);
-        WriteLine("  crew: that is the bridge crew's job, and they are not listening to you here.", ConsoleColor.DarkGray);
-        WriteLine("  Ask it what is out there and what it means. The sector is quiet on the", ConsoleColor.DarkGray);
-        WriteLine("  opening turn. It does not stay that way.", ConsoleColor.DarkGray);
     }
 
     /// <summary>

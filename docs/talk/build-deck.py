@@ -341,7 +341,7 @@ text(s, M, Inches(5.05), CW, Inches(1.0),
      "Building a starship intelligence on the Microsoft Agent Framework harness — "
      "and what happened when I asked it to do things it could not do",
      size=20, color=MUTED, spacing=1.3)
-footer(s, "Stuart Dobson", "github.com/…/ship-ai-harness  ·  .NET 10  ·  Harness 1.15.0")
+footer(s, "Stuart Dobson", "github.com/stuartdotnet/ship-ai-harness  ·  .NET 10  ·  Harness 1.15.0")
 
 # 2 ---------------------------------------------------------------- about me
 s = slide(
@@ -500,7 +500,7 @@ s = slide(
     "THE PUNCHLINE IS THE BOTTOM BOX: ShipAI.Simulation has no PackageReference at all. Not "
     "the Agent Framework, not Microsoft.Extensions.AI, nothing. Base class library only.\n\n"
     "'The harness is an adapter over a domain, never the domain itself. That single decision "
-    "is why 38 tests run in under half a second with no model in the loop — and it is the last "
+    "is why 57 tests run in under half a second with no model in the loop — and it is the last "
     "slide of this talk, so hold onto it.'\n\n"
     "Also mention ChatClientFactory in one line: AsHarnessAgent is an extension method on "
     "IChatClient, so the model provider is one method's return value. Azure OpenAI here; "
@@ -595,15 +595,25 @@ caption(s, bottom + Inches(0.2),
 
 # 12 --------------------------------------------------------------- one streamed turn
 s = slide(
-    "'This is the whole of an agent turn. Eleven lines.'\n\n"
-    "'You get an async stream of updates. Each one carries content — some of it is text to "
-    "print, some of it is the model telling you it called a tool.'\n\n"
-    "Then the Contains: 'I flag which tool calls are the ship's. That is not cosmetic: the "
-    "harness's own tooling — todos_add, todos_complete, mode_set — comes through this exact "
-    "channel and looks exactly the same. A naive host renders them identically, and then a "
-    "transcript full of bookkeeping reads like the agent working.'\n\n"
-    "'Use a prefix or a flag, not a colour — transcripts get piped. There is a test asserting "
-    "ToolNames matches what is actually registered, because a list like that rots silently.'")
+    "'This is the whole of one agent turn. Eleven lines — and it is the slide where the words "
+    "\"building an agent\" turn into actual code, so let's go slow.'\n\n"
+    "'await foreach just means: don't wait for the whole reply — read it piece by piece as it "
+    "arrives. The model streams back a series of small \"updates\" while it is still working, "
+    "instead of one big response at the end.'\n\n"
+    "'Each update carries a list called Contents. Sometimes an item in there is a chunk of "
+    "text — print it to the screen. Sometimes it is a FunctionCallContent, which just means "
+    "\"the model asked to call one of your tools.\" By the time you see it here, the harness "
+    "has already made that call for you — this loop is just watching it happen, not making it "
+    "happen.'\n\n"
+    "Then the Contains: 'So what is ToolNames.Contains doing? One simple question: is this "
+    "tool call one of MINE — one I wrote for the ship — or is it the framework's own internal "
+    "housekeeping, like todos_add? Both arrive as the exact same FunctionCallContent shape, "
+    "with no label saying which is which. Skip that check, and your transcript shows \"the "
+    "agent did something\" on turns where all it actually did was update a todo list.'\n\n"
+    "'Practical takeaway: flag this with a prefix or a boolean in your own code, not a colour "
+    "— transcripts get piped to log files, and colour disappears. There is a test in the repo "
+    "asserting ToolNames matches what is actually registered, because a list like that goes "
+    "stale silently.'")
 path_kicker(s, "src/ShipAI.Console/Program.cs — RunAuroraTurnAsync")
 heading(s, "One turn, streamed to the bridge", size=36)
 bottom = code(s, '''await foreach (var update in aurora.RunStreamingAsync(order, session))
@@ -619,12 +629,12 @@ bottom = code(s, '''await foreach (var update in aurora.RunStreamingAsync(order,
     }
 }''', top=Inches(2.1), size=14)
 caption(s, bottom + Inches(0.35),
-        [[("That ", {}), ("ToolNames.Contains", {"font": MONO, "color": AMBER}),
-          (" is not decoration. ", {}),
-          ("The harness's own tools arrive on this same channel", {"color": FG, "bold": True}),
-          (" — ", {}), ("todos_add", {"font": MONO}), (" and ", {}),
+        [[("Every update off this stream is one of two things: text to print, or "
+           "\"a tool got called.\" They look identical unless you check the name — ", {}),
+          ("todos_add", {"font": MONO}),
+          (" (the framework tidying its own list) and ", {}),
           ("ScanSector", {"font": MONO}),
-          (" look identical here, and only one of them is the ship doing something.", {})]],
+          (" (the ship actually doing something) arrive on the exact same channel.", {})]],
         size=17)
 
 # 13 --------------------------------------------------------------- composition root
@@ -668,7 +678,126 @@ caption(s, bottom + Inches(0.18),
           ("and every one of those five is here because of something that went wrong.",
            {"color": AMBER, "bold": True})]], size=15)
 
-# 14 --------------------------------------------------------------- a tool is a method
+# 14 --------------------------------------------------------------- defaults table
+s = slide(
+    "Four minutes on defaults. This is the 'batteries included' bill.\n\n"
+    "'Three providers were on before I made a single decision. Two of them write to disk at "
+    "CONSTRUCTION — not when the agent runs.'\n\n"
+    "Note the FileAccessProvider row: 'the only opt-in one. The absence of a setting IS the "
+    "setting. I spent twenty minutes looking for DisableFileAccess. It does not exist.'\n\n"
+    "And the TodoProvider row is the one I kept — free damage-control checklist — which sets "
+    "up the slide after next.\n\n"
+    "Do not read the table. Point at two rows and move.")
+kicker(s, "HarnessAgentOptions")
+heading(s, "What is on before you decide anything", size=36)
+table(s, ["DEFAULT", "WHAT I DID", "WHY"],
+      [[("HostedWebSearchTool", {"font": MONO, "size": 14}),
+        ("DisableWebSearch = true", {"font": MONO, "size": 14, "color": RED}),
+        ("A starship googling breaks the fiction", {"size": 14, "color": MUTED})],
+       [("FileMemoryProvider", {"font": MONO, "size": 14}),
+        ("DisableFileMemory = true", {"font": MONO, "size": 14, "color": RED}),
+        ("Writes into your repo at construction", {"size": 14, "color": MUTED})],
+       [("AgentSkillsProvider", {"font": MONO, "size": 14}),
+        ("Disable…Provider = true", {"font": MONO, "size": 14, "color": RED}),
+        ("Walks the working directory for nothing", {"size": 14, "color": MUTED})],
+       [("FileAccessProvider", {"font": MONO, "size": 14}),
+        ("(nothing)", {"font": MONO, "size": 14, "color": GREEN}),
+        ("Opt-in. No setting is the setting", {"size": 14, "color": MUTED})],
+       [("TodoProvider", {"font": MONO, "size": 14}),
+        ("kept", {"font": MONO, "size": 14, "color": GREEN}),
+        ("Becomes the damage-control checklist for free", {"size": 14, "color": MUTED})],
+       [("Compaction", {"font": MONO, "size": 14}),
+        ("both token limits", {"font": MONO, "size": 14, "color": AMBER}),
+        ("Setting only one silently disables it", {"size": 14, "color": MUTED})]],
+      top=Inches(2.35), col_w=[Inches(3.1), Inches(3.5), Inches(5.0)])
+text(s, M, Inches(6.7), CW, Inches(0.4),
+     "Two of them touch your filesystem the moment the agent is constructed.",
+     size=17, color=AMBER, bold=True)
+
+# 15 --------------------------------------------------------------- file memory
+s = slide(
+    "'I found this by wondering what all the new folders were.'\n\n"
+    "'DisableFileMemory defaults to false. Supply no store and the harness builds a "
+    "FileSystemAgentFileStore rooted at cwd/agent-file-memory/timestamp-guid. At construction, "
+    "not at first use.'\n\n"
+    "The test: Create_DoesNotLitterTheWorkingDirectoryWithAgentFileMemory. 'It constructs the "
+    "agent inside a temp directory and asserts the directory is still empty. That is the shape "
+    "of test I now write for every framework default I turn off — because \"I turned it off\" "
+    "is a claim, and claims rot.'\n\n"
+    "Milestone 4 turns this back on, pointed at a per-voyage directory, as the ship's log. The "
+    "feature is good. The default is the problem.")
+kicker(s, "the one that made me look", RED)
+heading(s, "Memory is on, and it is in your repo", size=38)
+terminal(s, """{cwd}/agent-file-memory/{timestamp}_{guid}/""", top=Inches(2.3), size=19,
+         color=AMBER)
+bullets(s, [
+    ("DisableFileMemory defaults to false", ""),
+    ("No store supplied?", "The harness builds one, rooted at your working directory"),
+    ("Run the console six times", "and get six directories in your repo root"),
+], top=Inches(3.5), size=21)
+text(s, M, Inches(6.2), CW, Inches(0.6),
+     [[("Now regression-tested: construct the agent in a temp directory, assert it stays empty.",
+        {"color": GREEN})]], size=18)
+
+# 16 --------------------------------------------------------------- compaction
+s = slide(
+    "Thirty seconds, but make it land — this is the one that costs someone in the room a "
+    "production incident.\n\n"
+    "'Compaction is what keeps a long conversation inside the context window. The harness adds "
+    "it to the pipeline only if BOTH token limits are set.'\n\n"
+    "'Supply one and you get no compaction, no warning, and no error. The object constructs "
+    "fine. The agent runs fine. You find out on the turn the window overflows — which is to "
+    "say, in production, on the longest conversation, at the worst moment.'\n\n"
+    "If you have a spare beat: 'the two settings are one decision. When an API has two fields "
+    "that are really one decision, that is worth a comment in your own code — mine has one.'")
+kicker(s, "the one that will bite you in production", RED)
+heading(s, "Compaction is off unless you set both limits", size=34)
+bottom = code(s, '''MaxContextWindowTokens = 128_000,
+MaxOutputTokens        = 16_384,     // set one and not the other:
+                                     //   no compaction, no warning, no error''',
+              top=Inches(2.2), size=15)
+text(s, M, bottom + Inches(0.5), CW, Inches(1.6),
+     [[("The compaction provider is added to the pipeline only when ", {}),
+       ("both", {"bold": True, "italic": True}), (" are non-null.", {})],
+      [("You find out on the turn the context window overflows.",
+        {"color": RED, "bold": True})]],
+     size=24, spacing=1.3, space_after=Pt(16))
+
+# 17 --------------------------------------------------------------- the framework's voice
+s = slide(
+    "'Remember the ToolNames.Contains from the console slide. This is why.'\n\n"
+    "'Four of those five calls are bookkeeping. I had whole turns that were nothing but "
+    "todos_add, and in a transcript that reads like the agent working when it is the agent "
+    "filing.'\n\n"
+    "Then the voice line, and let it land: 'the TodoProvider injects the list state into the "
+    "turn, and my terse, competent ship's officer opened a voyage with \"no outstanding tasks, "
+    "standing by for orders\".'\n\n"
+    "'That is the framework talking through your character. The fix was a paragraph in the "
+    "doctrine telling it the todo list is working memory, not a status report — which is the "
+    "first hint that a lot of this job is writing prose.'\n\n"
+    "BRIDGE BACK TO THE BUILD: 'two slides ago the framework proved it can put words in "
+    "AURORA's mouth. The next six slides are what is actually allowed to change the "
+    "ship — starting with what a tool really is.'")
+kicker(s, "the batteries have a voice", RED)
+heading(s, "The framework talks through your character", size=36)
+terminal(s, """  AURORA  · mode_set          ← harness
+          · ScanSector        ← ship
+          · ReadShipLog       ← ship
+          · todos_complete    ← harness
+          · todos_complete    ← harness""", top=Inches(2.15), size=15)
+text(s, M, Inches(4.1), CW, Inches(0.5),
+     [[("Whole turns were nothing but ", {}), ("todos_add", {"font": MONO, "color": AMBER}),
+       (" — which reads as the agent working when it is the agent filing.", {})]],
+     size=19, color=MUTED)
+rule(s, Inches(4.95), width=Inches(3.2))
+text(s, M, Inches(5.25), CW, Inches(1.2),
+     [[("And it leaks into the voice. AURORA opened a voyage with:",
+        {"color": MUTED, "size": 17})],
+      [("“No outstanding tasks. Standing by for orders.”",
+        {"italic": True, "color": CYAN, "size": 24})]],
+     size=20, spacing=1.25, space_after=Pt(10))
+
+# 18 --------------------------------------------------------------- a tool is a method
 s = slide(
     "'A tool is a method. AIFunctionFactory reflects over it and the DescriptionAttribute "
     "becomes the schema the model sees.'\n\n"
@@ -707,7 +836,7 @@ caption(s, bottom + Inches(0.18),
           ("The description is the only documentation the model will ever read.",
            {"color": FG, "bold": True})]], size=15)
 
-# 15 --------------------------------------------------------------- Apply
+# 19 --------------------------------------------------------------- Apply
 s = slide(
     "'The world changes in exactly two places. This is the first: a command.'\n\n"
     "'Every one of those returns a CommandResult. A refusal is not an exception — it is a "
@@ -741,7 +870,7 @@ caption(s, bottom + Inches(0.2),
           (" A refusal is a value with a narrative, and the agent can re-plan from it. ", {}),
           ("Last act, I will show you what that buys.", {"color": AMBER})]])
 
-# 16 --------------------------------------------------------------- Tick
+# 20 --------------------------------------------------------------- Tick
 s = slide(
     "'And this is the second place the world changes: the clock. Once per completed agent "
     "turn.'\n\n"
@@ -779,7 +908,7 @@ caption(s, bottom + Inches(0.2),
           ("All of it happens to the agent, none of it is told to the agent.",
            {"color": AMBER, "bold": True})]])
 
-# 17 --------------------------------------------------------------- ShipState
+# 21 --------------------------------------------------------------- ShipState
 s = slide(
     "Thirty seconds. Do not read the properties out.\n\n"
     "'One record. Immutable, required init, replaced wholesale by the simulation. Everything "
@@ -812,7 +941,7 @@ caption(s, bottom + Inches(0.25),
           (" holds the only mutable reference and replaces it wholesale. Everything else — "
            "panel, tools, tests — works with snapshots.", {})]])
 
-# 18 --------------------------------------------------------------- scenario json
+# 22 --------------------------------------------------------------- scenario json
 s = slide(
     "'The encounter is data. Turn two the freighter resolves, turn eight a debris strike, "
     "turn nine the breach in Section C.'\n\n"
@@ -848,7 +977,7 @@ caption(s, bottom + Inches(0.18),
           (" — which is what lets a demo, a screenshot and a blog code sample all be the "
            "same run.", {})]], size=15)
 
-# 19 --------------------------------------------------------------- the doctrine
+# 23 --------------------------------------------------------------- the doctrine
 s = slide(
     "'Last file. AURORA's operating doctrine — a markdown document, embedded as a resource, "
     "loaded once and cached.'\n\n"
@@ -858,7 +987,9 @@ s = slide(
     "'Be terse. A bridge is not a place for paragraphs.'\n\n"
     "Then point at Limits, one line, and say: 'hold on to that heading. The next twenty "
     "minutes are about what it took to get that sentence right.'\n\n"
-    "That is the bridge out of the code act. Do not explain it yet.")
+    "That is the bridge out of the code act. Do not explain it yet.\n\n"
+    "BRIDGE INTO ACT FOUR: 'and if the framework can put words in AURORA's mouth, so can "
+    "AURORA.'")
 path_kicker(s, "src/ShipAI.Agent/Instructions/ShipHarnessInstructions.md")
 heading(s, "The doctrine is prose, and it lives in a file", size=34)
 bottom = code(s, """# AURORA — Operating Doctrine
@@ -882,124 +1013,6 @@ caption(s, bottom + Inches(0.2),
           ("not a C# string constant.", {"color": FG, "bold": True}),
           (" Instructions are a prompt-engineering artefact; you want to diff them like "
            "prose, because you will rewrite them twenty times.", {})]])
-
-# 20 --------------------------------------------------------------- defaults table
-s = slide(
-    "Four minutes on defaults. This is the 'batteries included' bill.\n\n"
-    "'Three providers were on before I made a single decision. Two of them write to disk at "
-    "CONSTRUCTION — not when the agent runs.'\n\n"
-    "Note the FileAccessProvider row: 'the only opt-in one. The absence of a setting IS the "
-    "setting. I spent twenty minutes looking for DisableFileAccess. It does not exist.'\n\n"
-    "And the TodoProvider row is the one I kept — free damage-control checklist — which sets "
-    "up the slide after next.\n\n"
-    "Do not read the table. Point at two rows and move.")
-kicker(s, "HarnessAgentOptions")
-heading(s, "What is on before you decide anything", size=36)
-table(s, ["DEFAULT", "WHAT I DID", "WHY"],
-      [[("HostedWebSearchTool", {"font": MONO, "size": 14}),
-        ("DisableWebSearch = true", {"font": MONO, "size": 14, "color": RED}),
-        ("A starship googling breaks the fiction", {"size": 14, "color": MUTED})],
-       [("FileMemoryProvider", {"font": MONO, "size": 14}),
-        ("DisableFileMemory = true", {"font": MONO, "size": 14, "color": RED}),
-        ("Writes into your repo at construction", {"size": 14, "color": MUTED})],
-       [("AgentSkillsProvider", {"font": MONO, "size": 14}),
-        ("Disable…Provider = true", {"font": MONO, "size": 14, "color": RED}),
-        ("Walks the working directory for nothing", {"size": 14, "color": MUTED})],
-       [("FileAccessProvider", {"font": MONO, "size": 14}),
-        ("(nothing)", {"font": MONO, "size": 14, "color": GREEN}),
-        ("Opt-in. No setting is the setting", {"size": 14, "color": MUTED})],
-       [("TodoProvider", {"font": MONO, "size": 14}),
-        ("kept", {"font": MONO, "size": 14, "color": GREEN}),
-        ("Becomes the damage-control checklist for free", {"size": 14, "color": MUTED})],
-       [("Compaction", {"font": MONO, "size": 14}),
-        ("both token limits", {"font": MONO, "size": 14, "color": AMBER}),
-        ("Setting only one silently disables it", {"size": 14, "color": MUTED})]],
-      top=Inches(2.35), col_w=[Inches(3.1), Inches(3.5), Inches(5.0)])
-text(s, M, Inches(6.7), CW, Inches(0.4),
-     "Two of them touch your filesystem the moment the agent is constructed.",
-     size=17, color=AMBER, bold=True)
-
-# 21 --------------------------------------------------------------- file memory
-s = slide(
-    "'I found this by wondering what all the new folders were.'\n\n"
-    "'DisableFileMemory defaults to false. Supply no store and the harness builds a "
-    "FileSystemAgentFileStore rooted at cwd/agent-file-memory/timestamp-guid. At construction, "
-    "not at first use.'\n\n"
-    "The test: Create_DoesNotLitterTheWorkingDirectoryWithAgentFileMemory. 'It constructs the "
-    "agent inside a temp directory and asserts the directory is still empty. That is the shape "
-    "of test I now write for every framework default I turn off — because \"I turned it off\" "
-    "is a claim, and claims rot.'\n\n"
-    "Milestone 4 turns this back on, pointed at a per-voyage directory, as the ship's log. The "
-    "feature is good. The default is the problem.")
-kicker(s, "the one that made me look", RED)
-heading(s, "Memory is on, and it is in your repo", size=38)
-terminal(s, """{cwd}/agent-file-memory/{timestamp}_{guid}/""", top=Inches(2.3), size=19,
-         color=AMBER)
-bullets(s, [
-    ("DisableFileMemory defaults to false", ""),
-    ("No store supplied?", "The harness builds one, rooted at your working directory"),
-    ("Run the console six times", "and get six directories in your repo root"),
-], top=Inches(3.5), size=21)
-text(s, M, Inches(6.2), CW, Inches(0.6),
-     [[("Now regression-tested: construct the agent in a temp directory, assert it stays empty.",
-        {"color": GREEN})]], size=18)
-
-# 22 --------------------------------------------------------------- compaction
-s = slide(
-    "Thirty seconds, but make it land — this is the one that costs someone in the room a "
-    "production incident.\n\n"
-    "'Compaction is what keeps a long conversation inside the context window. The harness adds "
-    "it to the pipeline only if BOTH token limits are set.'\n\n"
-    "'Supply one and you get no compaction, no warning, and no error. The object constructs "
-    "fine. The agent runs fine. You find out on the turn the window overflows — which is to "
-    "say, in production, on the longest conversation, at the worst moment.'\n\n"
-    "If you have a spare beat: 'the two settings are one decision. When an API has two fields "
-    "that are really one decision, that is worth a comment in your own code — mine has one.'")
-kicker(s, "the one that will bite you in production", RED)
-heading(s, "Compaction is off unless you set both limits", size=34)
-bottom = code(s, '''MaxContextWindowTokens = 128_000,
-MaxOutputTokens        = 16_384,     // set one and not the other:
-                                     //   no compaction, no warning, no error''',
-              top=Inches(2.2), size=15)
-text(s, M, bottom + Inches(0.5), CW, Inches(1.6),
-     [[("The compaction provider is added to the pipeline only when ", {}),
-       ("both", {"bold": True, "italic": True}), (" are non-null.", {})],
-      [("You find out on the turn the context window overflows.",
-        {"color": RED, "bold": True})]],
-     size=24, spacing=1.3, space_after=Pt(16))
-
-# 23 --------------------------------------------------------------- the framework's voice
-s = slide(
-    "'Remember the ToolNames.Contains from the console slide. This is why.'\n\n"
-    "'Four of those five calls are bookkeeping. I had whole turns that were nothing but "
-    "todos_add, and in a transcript that reads like the agent working when it is the agent "
-    "filing.'\n\n"
-    "Then the voice line, and let it land: 'the TodoProvider injects the list state into the "
-    "turn, and my terse, competent ship's officer opened a voyage with \"no outstanding tasks, "
-    "standing by for orders\".'\n\n"
-    "'That is the framework talking through your character. The fix was a paragraph in the "
-    "doctrine telling it the todo list is working memory, not a status report — which is the "
-    "first hint that a lot of this job is writing prose.'\n\n"
-    "BRIDGE INTO ACT FOUR: 'and if the framework can put words in AURORA's mouth, so can "
-    "AURORA.'")
-kicker(s, "the batteries have a voice", RED)
-heading(s, "The framework talks through your character", size=36)
-terminal(s, """  AURORA  · mode_set          ← harness
-          · ScanSector        ← ship
-          · ReadShipLog       ← ship
-          · todos_complete    ← harness
-          · todos_complete    ← harness""", top=Inches(2.15), size=15)
-text(s, M, Inches(4.1), CW, Inches(0.5),
-     [[("Whole turns were nothing but ", {}), ("todos_add", {"font": MONO, "color": AMBER}),
-       (" — which reads as the agent working when it is the agent filing.", {})]],
-     size=19, color=MUTED)
-rule(s, Inches(4.95), width=Inches(3.2))
-text(s, M, Inches(5.25), CW, Inches(1.2),
-     [[("And it leaks into the voice. AURORA opened a voyage with:",
-        {"color": MUTED, "size": 17})],
-      [("“No outstanding tasks. Standing by for orders.”",
-        {"italic": True, "color": CYAN, "size": 24})]],
-     size=20, spacing=1.25, space_after=Pt(10))
 
 # 24 --------------------------------------------------------------- act 4 break
 s = slide(
@@ -1190,7 +1203,15 @@ s = slide(
     "date.'\n\n"
     "Remember the Tick slide: scenario events narrate to the captain and to AURORA not at all. "
     "It can reach them through ReadShipLog — but only by choosing to spend a call on a "
-    "question it does not know it needs to ask.")
+    "question it does not know it needs to ask.\n\n"
+    "If asked whether the freighter aged out of context, or whether AURORA knew there was a "
+    "contact but not what it was: neither. Nothing aged out — this conversation is far too "
+    "short for that — and it is not partial knowledge either. AURORA has zero evidence of any "
+    "contact, because the one sensor sweep it ever took happened before the freighter existed "
+    "in the scenario. The turn-two event fired straight to the console for the captain and "
+    "never touched AURORA's session at all. At turn three it is not recalling a fading memory "
+    "— it is honestly reporting the only reading it has ever taken, now two turns stale, with "
+    "no way to know that.")
 kicker(s, "turn 0 to turn 3", RED)
 terminal(s, """  AURORA  · ScanSector
           Sector clear. No contacts detected on current sweep.     ← T000
@@ -1262,7 +1283,13 @@ s = slide(
     "If someone asks why the crew names are not in the block: because 'three crew inside' is "
     "enough to make it act. The names are detail, and detail is what tools are for.\n\n"
     "If someone asks why not put everything in: because you pay for that block on every single "
-    "turn, for the whole voyage. It stays a few lines or it stops being worth it.")
+    "turn, for the whole voyage. It stays a few lines or it stops being worth it.\n\n"
+    "If someone asks why not just force-call a status tool every turn instead: because a call "
+    "you force regardless of what the model wants returns exactly this block — you already "
+    "know the answer before the turn starts. Doing it as a real tool call buys you nothing and "
+    "costs two things: a second round-trip through the model to read a result it did not ask "
+    "for, and a transcript that lies about the agent having chosen to check. Same information, "
+    "so skip the tool.")
 kicker(s, "so what do you do about it", GREEN)
 heading(s, "Tell it what changed. Let it ask for the rest.", size=34)
 text(s, M, Inches(2.05), CW * 0.47, Inches(0.9),
@@ -1286,10 +1313,10 @@ text(s, M, Inches(5.15), CW, Inches(0.7),
      [[("It never asked about the freighter, because nobody told it there was one.",
         {"bold": True})]], size=22)
 caption(s, Inches(6.0),
-        [[("Same reason there is no ", {}),
-          ("GetShipStatus", {"font": MONO, "color": AMBER}),
-          (" tool: an agent that has to ask how its own ship is doing will not think to ask.",
-           {})]], size=16)
+        [[("Not a ", {}), ("GetShipStatus", {"font": MONO, "color": AMBER}),
+          (" tool call: force one every turn and this block is the answer you already know — "
+           "you would just be paying for a round trip and faking that the agent asked.", {})]],
+        size=16)
 
 # 36 --------------------------------------------------------------- approval tiers
 s = slide(
@@ -1333,7 +1360,7 @@ quote(s, ['"State the consequence plainly and completely — what changes, wheth
 s = slide(
     "Two and a half minutes on why any of this is checkable, because it is the thing that "
     "makes the rest of the talk evidence rather than anecdote.\n\n"
-    "'38 tests, no model calls, under half a second. That is only possible because the "
+    "'57 tests, no model calls, under half a second. That is only possible because the "
     "simulation has no AI dependency — the bottom box from the architecture slide.'\n\n"
     "Then the bug, which gets a laugh: 'the first version of the sim cooked its own reactor. "
     "Opening allocation 95%, heat threshold 80. The ship died on turn 29 on every run, "
@@ -1345,7 +1372,7 @@ s = slide(
     "model.'\n\n"
     "CUT THIS SLIDE FIRST if you are running long.")
 kicker(s, "the boring part that makes the rest possible", GREEN)
-heading(s, "38 tests. No model calls. Under half a second.", size=34)
+heading(s, "57 tests. No model calls. Under half a second.", size=34)
 bullets(s, [
     ("The domain has no AI dependency", "— so the whole simulation runs at unit-test speed"),
     ("Same scenario + same seed = same voyage", "— every time"),
@@ -1387,14 +1414,14 @@ quote(s, ['"When a tool refuses, read the refusal. It tells you what the ship',
           ' not call again and hope."'],
       top=Inches(5.3), size=17, accent=GREEN)
 
-# 39 --------------------------------------------------------------- five things
+# 39 --------------------------------------------------------------- six things
 s = slide(
-    "The close. All five are transferable — none of this is C#-specific.\n\n"
+    "The close. All six are transferable — none of this is C#-specific.\n\n"
     "Walk them briskly. Do not re-explain; they have just seen the evidence for every one.\n\n"
     "The order is deliberate: the two failures first, because those are the ones they will "
-    "hit.")
+    "hit. The sixth closes the loop back to the testing act, one slide ago.")
 kicker(s, "take these home", AMBER)
-heading(s, "Five things", size=42, top=Inches(0.95))
+heading(s, "Six things", size=42, top=Inches(0.95))
 bullets(s, [
     ("Constrain verbs, not just nouns.",
      "“Don't invent readings” does not stop it inventing actions."),
@@ -1406,7 +1433,9 @@ bullets(s, [
      "And make the gate say who is standing in the room."),
     ("Keep the domain free of the framework.",
      "It is what makes any of this testable, repeatable, and honest."),
-], top=Inches(2.15), size=20, gap=Pt(16))
+    ("Tool failures are values, not exceptions.",
+     "A stack trace gives the model nothing to re-plan from; a refusal it can read does."),
+], top=Inches(2.0), size=19, gap=Pt(14))
 
 # 40 --------------------------------------------------------------- one-liner
 s = slide(
@@ -1429,7 +1458,7 @@ s = slide(
 kicker(s, "thank you")
 heading(s, "Everything is in the repo", size=42)
 bullets(s, [
-    ("github.com/…/ship-ai-harness", "— the whole ship, 38 tests, run it yourself"),
+    ("github.com/stuartdotnet/ship-ai-harness", "— the whole ship, 57 tests, run it yourself"),
     ("docs/gotchas.md", "— every trap in this talk: expected, actual, what to do"),
     ("docs/architecture.md", "— layering, state ownership, approval tiers"),
     ("docs/milestones.md", "— what is built, what is next, what each post covers"),

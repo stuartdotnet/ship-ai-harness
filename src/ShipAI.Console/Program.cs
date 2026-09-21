@@ -42,7 +42,7 @@ using (chatClient)
     var aurora = ShipAgentFactory.Create(chatClient, simulation);
     var session = await aurora.CreateSessionAsync();
 
-    ShipConsole.Banner(scenario.Name, scenario.Briefing);
+    ShipConsole.Banner(scenario.Name, scenario.Situation);
     ShipConsole.StatusPanel(simulation.State);
 
     // AURORA speaks first. Prime the agent with the captain's arrival so it opens the

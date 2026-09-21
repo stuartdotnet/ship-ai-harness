@@ -24,6 +24,8 @@ public sealed class JsonScenario : IScenario
 
     public string Briefing => _definition.Briefing;
 
+    public string Situation => _definition.Situation;
+
     public IReadOnlyList<ScenarioEvent> Events => _definition.Events;
 
     /// <summary>Loads a scenario by file name, e.g. <c>derelict-freighter</c>.</summary>
@@ -64,6 +66,7 @@ public sealed class JsonScenario : IScenario
     {
         public required string Name { get; init; }
         public required string Briefing { get; init; }
+        public required string Situation { get; init; }
         public required InitialStateDefinition InitialState { get; init; }
         public ImmutableArray<ScenarioEvent> Events { get; init; } = [];
     }

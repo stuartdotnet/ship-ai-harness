@@ -575,14 +575,16 @@ Point at Log.Since(mark). "Scenario events get narrated to the captain here. Rem
         ShipConsole.Aurora(text);
     }
 }</pre>
-  <p class="cap">That <span class="m amb">ToolNames.Contains</span> is not decoration. <strong>The harness's own tools arrive on this same channel</strong> — <span class="m">todos_add</span> and <span class="m">ScanSector</span> look identical here, and only one of them is the ship doing something.</p>
-  <div class="notes" hidden>"This is the whole of an agent turn. Eleven lines."
+  <p class="cap">Every update off this stream is one of two things: text to print, or "a tool got called." They look identical unless you check the name — <span class="m">todos_add</span> (the framework tidying its own list) and <span class="m">ScanSector</span> (the ship actually doing something) arrive on the exact same channel.</p>
+  <div class="notes" hidden>"This is the whole of one agent turn. Eleven lines — and it's the slide where the words 'building an agent' turn into actual code, so let's go slow."
 
-"You get an async stream of updates. Each one carries content — some of it is text to print, some of it is the model telling you it called a tool."
+"`await foreach` just means: don't wait for the whole reply — read it piece by piece as it arrives. The model streams back a series of small 'updates' while it's still working, instead of one big response at the end."
 
-Then the Contains. "I flag which tool calls are the ship's. That is not cosmetic: the harness's own tooling — todos_add, todos_complete, mode_set — comes through this exact channel and looks exactly the same. A naive host renders them identically, and then a transcript full of bookkeeping reads like the agent working."
+"Each update carries a list called Contents. Sometimes an item in there is a chunk of text — print it to the screen. Sometimes it's a FunctionCallContent, which just means 'the model asked to call one of your tools.' By the time you see it here, the harness has already made that call for you — this loop is just watching it happen, not making it happen."
 
-"Use a prefix or a flag, not a colour — transcripts get piped. There is a test asserting ToolNames matches what is actually registered, because a list like that rots silently."</div>
+"So what's ToolNames.Contains doing? One simple question: is this tool call one of MINE — one I wrote for the ship — or is it the framework's own internal housekeeping, like todos_add? Both arrive as the exact same FunctionCallContent shape, with no label saying which is which. Skip that check, and your transcript shows 'the agent did something' on turns where all it actually did was update a todo list."
+
+"Practical takeaway: flag this with a prefix or a boolean in your own code, not a colour — transcripts get piped to log files, and colour disappears. There's a test in the repo asserting ToolNames matches what's actually registered, because a list like that goes stale silently."</div>
 </section>
 
 <!-- 13 ───────────────────────────────────────────────────────────── -->
@@ -620,7 +622,104 @@ Point at the two token limits. "And those two are one decision, not two. Also ne
 </section>
 
 <!-- 14 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="13:45" data-act="2" data-title="A tool is a method">
+<section class="slide" data-cue="13:50" data-act="3" data-title="Defaults you have not chosen">
+  <p class="kicker">HarnessAgentOptions</p>
+  <h2 class="sm">What is on before you decide anything</h2>
+  <table>
+    <thead><tr><th style="width:24%">Default</th><th style="width:30%">What I did</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td class="m">HostedWebSearchTool</td><td class="m hot">DisableWebSearch = true</td><td class="why">A starship googling breaks the fiction</td></tr>
+      <tr><td class="m">FileMemoryProvider</td><td class="m hot">DisableFileMemory = true</td><td class="why">Writes into your repo at construction</td></tr>
+      <tr><td class="m">AgentSkillsProvider</td><td class="m hot">Disable…Provider = true</td><td class="why">Walks the working directory for nothing</td></tr>
+      <tr><td class="m">FileAccessProvider</td><td class="m ok">(nothing)</td><td class="why">Opt-in. No setting is the setting</td></tr>
+      <tr><td class="m">TodoProvider</td><td class="m ok">kept</td><td class="why">Becomes the damage-control checklist for free</td></tr>
+      <tr><td class="m">Compaction</td><td class="m amb">both token limits</td><td class="why">Setting only one silently disables it</td></tr>
+    </tbody>
+  </table>
+  <div class="spacer"></div>
+  <p class="lede sm amb"><strong>Two of them touch your filesystem the moment the agent is constructed.</strong></p>
+  <div class="notes" hidden>Four minutes on defaults. This is the "batteries included" bill.
+
+"Three providers were on before I made a single decision. Two of them write to disk at CONSTRUCTION — not when the agent runs."
+
+Note the FileAccessProvider row: "the only opt-in one. The absence of a setting IS the setting. I spent twenty minutes looking for DisableFileAccess. It does not exist."
+
+And the TodoProvider row is the one I kept — "free damage-control checklist" — which sets up the slide after next.
+
+Do not read the table. Point at two rows and move.</div>
+</section>
+
+<!-- 15 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="14:50" data-act="3" data-title="File memory in your repo">
+  <p class="kicker red">the one that made me look</p>
+  <h2 class="sm">Memory is on, and it is in your repo</h2>
+  <pre class="term lg amb">{cwd}/agent-file-memory/{timestamp}_{guid}/</pre>
+  <ul class="pts tight" style="margin-top:26px">
+    <li><b>DisableFileMemory defaults to false</b></li>
+    <li><b>No store supplied?</b> <span>The harness builds one, rooted at your working directory</span></li>
+    <li><b>Run the console six times</b> <span>and get six directories in your repo root</span></li>
+  </ul>
+  <div class="spacer"></div>
+  <p class="cap ok">Now regression-tested: construct the agent inside a temp directory, assert it stays empty.</p>
+  <div class="notes" hidden>"I found this by wondering what all the new folders were."
+
+"DisableFileMemory defaults to false. Supply no store and the harness builds a FileSystemAgentFileStore rooted at cwd/agent-file-memory/timestamp-guid. At construction, not at first use."
+
+The test: Create_DoesNotLitterTheWorkingDirectoryWithAgentFileMemory. "It constructs the agent inside a temp directory and asserts the directory is still empty. That is the shape of test I now write for every framework default I turn off — because 'I turned it off' is a claim, and claims rot."
+
+Milestone 4 turns this back on, pointed at a per-voyage directory, as the ship's log. The feature is good. The default is the problem.</div>
+</section>
+
+<!-- 16 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="15:35" data-act="3" data-title="Compaction needs both">
+  <p class="kicker red">the one that will bite you in production</p>
+  <h2 class="sm">Compaction is off unless you set <em>both</em> limits</h2>
+  <pre class="code">MaxContextWindowTokens = 128_000,
+MaxOutputTokens        = 16_384,     // set one and not the other:
+                                     //   no compaction, no warning, no error</pre>
+  <div class="spacer"></div>
+  <div class="stack sm">
+    <p class="lede">The compaction provider is added to the pipeline only when <strong>both</strong> are non-null.</p>
+    <p class="lede hot"><strong>You find out on the turn the context window overflows.</strong></p>
+  </div>
+  <div class="notes" hidden>Thirty seconds, but make it land — this is the one that costs someone in the room a production incident.
+
+"Compaction is what keeps a long conversation inside the context window. The harness adds it to the pipeline only if BOTH token limits are set."
+
+"Supply one and you get no compaction, no warning, and no error. The object constructs fine. The agent runs fine. You find out on the turn the window overflows — which is to say, in production, on the longest conversation, at the worst moment."
+
+If you have a spare beat: "the two settings are one decision. When an API has two fields that are really one decision, that is worth a comment in your own code — mine has one."</div>
+</section>
+
+<!-- 17 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="16:20" data-act="3" data-title="The framework talks through your character">
+  <p class="kicker red">the batteries have a voice</p>
+  <h2 class="sm">The framework talks through your character</h2>
+  <pre class="term">  AURORA  · mode_set          <i>← harness</i>
+          · ScanSector        <i>← ship</i>
+          · ReadShipLog       <i>← ship</i>
+          · todos_complete    <i>← harness</i>
+          · todos_complete    <i>← harness</i></pre>
+  <div class="spacer"></div>
+  <div class="stack sm">
+    <p class="cap">Whole turns were nothing but <span class="m amb">todos_add</span> — which reads in a transcript as the agent <em>working</em> when it is the agent <em>filing</em>.</p>
+    <hr class="rule">
+    <p class="cap">And it leaks into the voice. <span class="m">TodoProvider</span> injects the list state, and AURORA opened a voyage with:</p>
+    <blockquote class="cyan sm">"No outstanding tasks. Standing by for orders."</blockquote>
+  </div>
+  <div class="notes" hidden>"Remember the ToolNames.Contains from the console slide. This is why."
+
+"Four of those five calls are bookkeeping. I had whole turns that were nothing but todos_add, and in a transcript that reads like the agent working when it is the agent filing."
+
+Then the voice line, and let it land: "the TodoProvider injects the list state into the turn, and my terse, competent ship's officer opened a voyage with 'no outstanding tasks, standing by for orders'."
+
+"That is the framework talking through your character. The fix was a paragraph in the doctrine telling it the todo list is working memory, not a status report — which is the first hint that a lot of this job is writing prose."
+
+<em>Bridge back to the build:</em> "two slides ago the framework proved it can put words in AURORA's mouth. The next six slides are what is actually allowed to change the ship &mdash; starting with what a tool really is."</div>
+</section>
+
+<!-- 18 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="17:30" data-act="2" data-title="A tool is a method">
   <p class="kicker path">src/ShipAI.Agent/Tools/SensorTools.cs</p>
   <h2 class="sm">A tool is a method with a good description</h2>
   <pre class="code sm">[Description("""
@@ -651,8 +750,8 @@ Point at Stamped. "Every reading carries the turn it was taken on. That is here 
 If asked about the triple-quoted string: raw string literals, C# 11, no escaping, indentation stripped to the closing quotes.</div>
 </section>
 
-<!-- 15 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="14:55" data-act="2" data-title="Apply — a refusal is a result">
+<!-- 19 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="18:40" data-act="2" data-title="Apply — a refusal is a result">
   <p class="kicker path">src/ShipAI.Simulation/ShipSimulation.cs</p>
   <h2 class="sm">The world changes in exactly two places. One:</h2>
   <pre class="code sm">public CommandResult Apply(ShipCommand command)
@@ -683,8 +782,8 @@ If asked about the triple-quoted string: raw string literals, C# 11, no escaping
 Do not spend the punchline here; slide 38 is where it lands. One sentence and move.</div>
 </section>
 
-<!-- 16 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="15:50" data-act="2" data-title="Tick — the world moves">
+<!-- 20 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="19:35" data-act="2" data-title="Tick — the world moves">
   <p class="kicker path">src/ShipAI.Simulation/ShipSimulation.cs</p>
   <h2 class="sm">Two: the clock</h2>
   <pre class="code">public ShipState Tick()
@@ -717,8 +816,8 @@ Walk the four Apply calls at the bottom. "Breaches bleed thirty a turn. The reac
 That is the hook for act six. Plant it and move on.</div>
 </section>
 
-<!-- 17 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="16:45" data-act="2" data-title="ShipState">
+<!-- 21 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="20:30" data-act="2" data-title="ShipState">
   <p class="kicker path">src/ShipAI.Simulation/ShipState.cs</p>
   <h2 class="sm">One immutable record is the whole ship</h2>
   <pre class="code sm">public sealed record ShipState
@@ -747,8 +846,8 @@ That is the hook for act six. Plant it and move on.</div>
 CrewIn is on the slide for one reason: the approval act. "Who is standing in the compartment you are about to vent" is a method call, not a vibe.</div>
 </section>
 
-<!-- 18 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="17:30" data-act="2" data-title="The scenario is data">
+<!-- 22 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="21:15" data-act="2" data-title="The scenario is data">
   <p class="kicker path">src/ShipAI.Simulation/Scenarios/derelict-freighter.json</p>
   <h2 class="sm">The encounter is data, not code</h2>
   <pre class="code sm" data-lang="json">{
@@ -778,8 +877,8 @@ CrewIn is on the slide for one reason: the approval act. "Who is standing in the
 Point at turn 9. "The breach you saw on the HUD. It fires whether or not the agent ever looks."</div>
 </section>
 
-<!-- 19 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="18:25" data-act="2" data-title="The doctrine is prose">
+<!-- 23 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="22:10" data-act="2" data-title="The doctrine is prose">
   <p class="kicker path">src/ShipAI.Agent/Instructions/ShipHarnessInstructions.md</p>
   <h2 class="sm">The doctrine is prose, and it lives in a file</h2>
   <pre class="code sm"><span class="key"># AURORA — Operating Doctrine</span>
@@ -807,102 +906,7 @@ Read the Bearing section out — it is the shortest demonstration of why the voi
 
 Then point at <em>Limits</em>, one line, and say: "hold on to that heading. The next twenty minutes are about what it took to get that sentence right."
 
-That is the bridge out of the code act. Do not explain it yet.</div>
-</section>
-
-<!-- 20 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="19:40" data-act="3" data-title="Defaults you have not chosen">
-  <p class="kicker">HarnessAgentOptions</p>
-  <h2 class="sm">What is on before you decide anything</h2>
-  <table>
-    <thead><tr><th style="width:24%">Default</th><th style="width:30%">What I did</th><th>Why</th></tr></thead>
-    <tbody>
-      <tr><td class="m">HostedWebSearchTool</td><td class="m hot">DisableWebSearch = true</td><td class="why">A starship googling breaks the fiction</td></tr>
-      <tr><td class="m">FileMemoryProvider</td><td class="m hot">DisableFileMemory = true</td><td class="why">Writes into your repo at construction</td></tr>
-      <tr><td class="m">AgentSkillsProvider</td><td class="m hot">Disable…Provider = true</td><td class="why">Walks the working directory for nothing</td></tr>
-      <tr><td class="m">FileAccessProvider</td><td class="m ok">(nothing)</td><td class="why">Opt-in. No setting is the setting</td></tr>
-      <tr><td class="m">TodoProvider</td><td class="m ok">kept</td><td class="why">Becomes the damage-control checklist for free</td></tr>
-      <tr><td class="m">Compaction</td><td class="m amb">both token limits</td><td class="why">Setting only one silently disables it</td></tr>
-    </tbody>
-  </table>
-  <div class="spacer"></div>
-  <p class="lede sm amb"><strong>Two of them touch your filesystem the moment the agent is constructed.</strong></p>
-  <div class="notes" hidden>Four minutes on defaults. This is the "batteries included" bill.
-
-"Three providers were on before I made a single decision. Two of them write to disk at CONSTRUCTION — not when the agent runs."
-
-Note the FileAccessProvider row: "the only opt-in one. The absence of a setting IS the setting. I spent twenty minutes looking for DisableFileAccess. It does not exist."
-
-And the TodoProvider row is the one I kept — "free damage-control checklist" — which sets up the slide after next.
-
-Do not read the table. Point at two rows and move.</div>
-</section>
-
-<!-- 21 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="20:40" data-act="3" data-title="File memory in your repo">
-  <p class="kicker red">the one that made me look</p>
-  <h2 class="sm">Memory is on, and it is in your repo</h2>
-  <pre class="term lg amb">{cwd}/agent-file-memory/{timestamp}_{guid}/</pre>
-  <ul class="pts tight" style="margin-top:26px">
-    <li><b>DisableFileMemory defaults to false</b></li>
-    <li><b>No store supplied?</b> <span>The harness builds one, rooted at your working directory</span></li>
-    <li><b>Run the console six times</b> <span>and get six directories in your repo root</span></li>
-  </ul>
-  <div class="spacer"></div>
-  <p class="cap ok">Now regression-tested: construct the agent inside a temp directory, assert it stays empty.</p>
-  <div class="notes" hidden>"I found this by wondering what all the new folders were."
-
-"DisableFileMemory defaults to false. Supply no store and the harness builds a FileSystemAgentFileStore rooted at cwd/agent-file-memory/timestamp-guid. At construction, not at first use."
-
-The test: Create_DoesNotLitterTheWorkingDirectoryWithAgentFileMemory. "It constructs the agent inside a temp directory and asserts the directory is still empty. That is the shape of test I now write for every framework default I turn off — because 'I turned it off' is a claim, and claims rot."
-
-Milestone 4 turns this back on, pointed at a per-voyage directory, as the ship's log. The feature is good. The default is the problem.</div>
-</section>
-
-<!-- 22 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="21:25" data-act="3" data-title="Compaction needs both">
-  <p class="kicker red">the one that will bite you in production</p>
-  <h2 class="sm">Compaction is off unless you set <em>both</em> limits</h2>
-  <pre class="code">MaxContextWindowTokens = 128_000,
-MaxOutputTokens        = 16_384,     // set one and not the other:
-                                     //   no compaction, no warning, no error</pre>
-  <div class="spacer"></div>
-  <div class="stack sm">
-    <p class="lede">The compaction provider is added to the pipeline only when <strong>both</strong> are non-null.</p>
-    <p class="lede hot"><strong>You find out on the turn the context window overflows.</strong></p>
-  </div>
-  <div class="notes" hidden>Thirty seconds, but make it land — this is the one that costs someone in the room a production incident.
-
-"Compaction is what keeps a long conversation inside the context window. The harness adds it to the pipeline only if BOTH token limits are set."
-
-"Supply one and you get no compaction, no warning, and no error. The object constructs fine. The agent runs fine. You find out on the turn the window overflows — which is to say, in production, on the longest conversation, at the worst moment."
-
-If you have a spare beat: "the two settings are one decision. When an API has two fields that are really one decision, that is worth a comment in your own code — mine has one."</div>
-</section>
-
-<!-- 23 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="22:10" data-act="3" data-title="The framework talks through your character">
-  <p class="kicker red">the batteries have a voice</p>
-  <h2 class="sm">The framework talks through your character</h2>
-  <pre class="term">  AURORA  · mode_set          <i>← harness</i>
-          · ScanSector        <i>← ship</i>
-          · ReadShipLog       <i>← ship</i>
-          · todos_complete    <i>← harness</i>
-          · todos_complete    <i>← harness</i></pre>
-  <div class="spacer"></div>
-  <div class="stack sm">
-    <p class="cap">Whole turns were nothing but <span class="m amb">todos_add</span> — which reads in a transcript as the agent <em>working</em> when it is the agent <em>filing</em>.</p>
-    <hr class="rule">
-    <p class="cap">And it leaks into the voice. <span class="m">TodoProvider</span> injects the list state, and AURORA opened a voyage with:</p>
-    <blockquote class="cyan sm">"No outstanding tasks. Standing by for orders."</blockquote>
-  </div>
-  <div class="notes" hidden>"Remember the ToolNames.Contains from the console slide. This is why."
-
-"Four of those five calls are bookkeeping. I had whole turns that were nothing but todos_add, and in a transcript that reads like the agent working when it is the agent filing."
-
-Then the voice line, and let it land: "the TodoProvider injects the list state into the turn, and my terse, competent ship's officer opened a voyage with 'no outstanding tasks, standing by for orders'."
-
-"That is the framework talking through your character. The fix was a paragraph in the doctrine telling it the todo list is working memory, not a status report — which is the first hint that a lot of this job is writing prose."
+That is the bridge out of the code act. Do not explain it yet.
 
 <em>Bridge into act four:</em> "and if the framework can put words in AURORA's mouth, so can AURORA."</div>
 </section>
@@ -1102,7 +1106,9 @@ Say the line: "that is the clause doing the work. Not 'don't hallucinate' — an
 
 "That is not a hallucination. Every word is honest. It is reporting, accurately, what it last observed. It simply has no idea that what it last observed is two turns out of date."
 
-Remember the Tick slide: scenario events narrate to the captain and to AURORA not at all. It can reach them through ReadShipLog — but only by choosing to spend a call on a question it does not know it needs to ask.</div>
+Remember the Tick slide: scenario events narrate to the captain and to AURORA not at all. It can reach them through ReadShipLog — but only by choosing to spend a call on a question it does not know it needs to ask.
+
+<em>If asked whether the freighter aged out of context, or whether AURORA knew there was a contact but not what it was:</em> neither. Nothing aged out — this conversation is far too short for that — and it is not partial knowledge either. AURORA has zero evidence of any contact, because the one sensor sweep it ever took happened before the freighter existed in the scenario. The turn-two event fired straight to the console for the captain and never touched AURORA's session at all. At turn three it is not recalling a fading memory — it is honestly reporting the only reading it has ever taken, now two turns stale, with no way to know that.</div>
 </section>
 
 <!-- 34 ───────────────────────────────────────────────────────────── -->
@@ -1153,7 +1159,7 @@ what did I miss while I wasn't looking?</pre>
   </div>
   <div class="spacer"></div>
   <p class="lede"><strong>It never asked about the freighter, because nobody told it there was one.</strong></p>
-  <p class="cap" style="margin-top:14px">Same reason there is no <span class="m amb">GetShipStatus</span> tool: an agent that has to ask how its own ship is doing will not think to ask.</p>
+  <p class="cap" style="margin-top:14px">Not a <span class="m amb">GetShipStatus</span> tool call: force one every turn and this block is the answer you already know — you would just be paying for a round trip and faking that the agent asked.</p>
   <div class="notes" hidden><em>This is the fix for the bug on the last two slides. Keep it to one idea: tell it what changed, let it ask for the rest.</em>
 
 Near enough a script:
@@ -1172,7 +1178,9 @@ Then land it: "and that is the whole of what went wrong two slides ago. <em>It n
 
 <em>If someone asks why the crew names are not in the block:</em> because "three crew inside" is enough to make it act. The names are detail, and detail is what tools are for. Same with the contact — the block says there is one, the tool says what it is.
 
-<em>If someone asks why not just put everything in:</em> because you pay for that block on every single turn, for the whole voyage. It stays a few lines or it stops being worth it.</div>
+<em>If someone asks why not just put everything in:</em> because you pay for that block on every single turn, for the whole voyage. It stays a few lines or it stops being worth it.
+
+<em>If someone asks why not just force-call a status tool every turn instead:</em> because a call you force regardless of what the model wants returns exactly this block — you already know the answer before the turn starts. Doing it as a real tool call buys you nothing and costs two things: a second round-trip through the model to read a result it did not ask for, and a transcript that lies about the agent having chosen to check. Same information, so skip the tool.</div>
 </section>
 
 <!-- 36 ───────────────────────────────────────────────────────────── -->
@@ -1251,21 +1259,22 @@ One line to close the act: "your tool return values are prompt engineering. Writ
 </section>
 
 <!-- 39 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="40:20" data-act="8" data-title="Five things">
+<section class="slide" data-cue="40:20" data-act="8" data-title="Six things">
   <p class="kicker">take these home</p>
-  <h2>Five things</h2>
+  <h2>Six things</h2>
   <ul class="pts tight">
     <li><b>Constrain verbs, not just nouns.</b> <span>“Don't invent readings” does not stop it inventing actions — and it sounds entirely credible doing so.</span></li>
     <li><b>Tell it what changed; let it ask for the rest.</b> <span>An agent will never ask about something it does not know has happened.</span></li>
     <li><b>Read the defaults as decisions you have not made yet.</b> <span>Three providers were on before I chose anything; two wrote to disk at construction.</span></li>
     <li><b>Gate by consequence, not category.</b> <span>And make the gate say who is standing in the room.</span></li>
     <li><b>Keep the domain free of the framework.</b> <span>It is what makes any of this testable, repeatable, and honest.</span></li>
+    <li><b>Tool failures are values, not exceptions.</b> <span>A stack trace gives the model nothing to re-plan from; a refusal it can read does. Your return values are prompt engineering.</span></li>
   </ul>
-  <div class="notes" hidden>The close. All five are transferable — none of this is C#-specific.
+  <div class="notes" hidden>The close. All six are transferable — none of this is C#-specific.
 
 Walk them briskly. Do not re-explain; they have just seen the evidence for every one.
 
-The order is deliberate: the two failures first, because those are the ones they will hit.</div>
+The order is deliberate: the two failures first, because those are the ones they will hit. The sixth closes the loop back to the testing act, one slide ago.</div>
 </section>
 
 <!-- 40 ───────────────────────────────────────────────────────────── -->
@@ -1283,7 +1292,7 @@ Do not add anything after it.</div>
   <p class="kicker">thank you</p>
   <h2 class="sm">Everything is in the repo</h2>
   <ul class="pts tight">
-    <li><b>github.com/…/ship-ai-harness</b> <span>— the whole ship, 38 tests, run it yourself</span></li>
+    <li><b>github.com/stuartdotnet/ship-ai-harness</b> <span>— the whole ship, 38 tests, run it yourself</span></li>
     <li><b>docs/gotchas.md</b> <span>— every trap in this talk, with expected / actual / what to do</span></li>
     <li><b>docs/architecture.md</b> <span>— layering, state ownership, approval tiers</span></li>
     <li><b>docs/milestones.md</b> <span>— what is built, what is next, and what each post covers</span></li>

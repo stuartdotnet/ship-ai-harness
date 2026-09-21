@@ -31,7 +31,7 @@ moving; versions are pinned exactly in `Directory.Packages.props`.
 ```bash
 git clone <this repo> && cd ship-ai-harness
 cp .env.example .env          # fill in AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_DEPLOYMENT
-dotnet test                   # 38 tests, no model calls, ~1s
+dotnet test                   # 57 tests, no model calls, ~1s
 dotnet run --project src/ShipAI.Console
 ```
 

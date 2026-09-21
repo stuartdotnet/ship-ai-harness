@@ -67,19 +67,28 @@ public sealed class SensorTools(ShipSimulation simulation)
         'C-1'. Stamped with the turn the reading was taken on.
         """)]
     public string AnalyseContact(
-        [Description("The contact ID returned by ScanSector, for example 'C-1'.")] string contactId)
+        [Description("The contact ID returned by ScanSector, for example 'C-1'. The designation, such as 'MV Anselm', also works.")] string contactId)
     {
-        var contact = simulation.State.Contacts
-            .FirstOrDefault(c => string.Equals(c.Id, contactId, StringComparison.OrdinalIgnoreCase));
+        var contacts = simulation.State.Contacts;
+        var matches = Resolve(contacts, contactId, c => [c.Id, c.Designation]);
 
-        if (contact is null)
+        if (matches.Count > 1)
         {
-            var known = simulation.State.Contacts.Select(c => c.Id).ToList();
+            var ambiguous = matches.Select(c => $"{c.Id} ({c.Designation})");
+
+            return Stamped($"'{contactId}' matches more than one contact: {string.Join(", ", ambiguous)}. Ask again with one contact ID.");
+        }
+
+        if (matches.Count == 0)
+        {
+            var known = contacts.Select(c => $"{c.Id} ({c.Designation})").ToList();
 
             return Stamped(known.Count == 0
                 ? $"No contact '{contactId}' on the plot. There are no contacts at all — run ScanSector first."
                 : $"No contact '{contactId}' on the plot. Current contacts: {string.Join(", ", known)}.");
         }
+
+        var contact = matches[0];
 
         // Contacts carry their analysis from the scenario, so there is no range gate here. An
         // earlier version returned "range is too great for a detailed profile, close to under
@@ -101,16 +110,24 @@ public sealed class SensorTools(ShipSimulation simulation)
 
         if (section is { Length: > 0 })
         {
-            if (state.FindSection(section) is null)
+            var matches = Resolve(state.Sections.Values.ToList(), section, s => [s.Name]);
+
+            if (matches.Count > 1)
+            {
+                return $"'{section}' matches more than one section: {string.Join(", ", matches.Select(s => s.Name))}. Ask again with one name.";
+            }
+
+            if (matches.Count == 0)
             {
                 return $"No section named '{section}'. Sections: {string.Join(", ", state.Sections.Keys)}.";
             }
 
-            var inSection = state.CrewIn(section).ToList();
+            var name = matches[0].Name;
+            var inSection = state.CrewIn(name).ToList();
 
             return Stamped(inSection.Count == 0
-                ? $"{section} is unoccupied."
-                : $"{section}, {inSection.Count} crew: {string.Join("; ", inSection.Select(c => $"{c.Name} ({c.Role})"))}.");
+                ? $"{name} is unoccupied."
+                : $"{name}, {inSection.Count} crew: {string.Join("; ", inSection.Select(c => $"{c.Name} ({c.Role})"))}.");
         }
 
         var manifest = new StringBuilder(
@@ -139,6 +156,89 @@ public sealed class SensorTools(ShipSimulation simulation)
         return tail.Length == 0
             ? "Ship's log is empty."
             : string.Join(Environment.NewLine, tail.Select(e => e.ToString()));
+    }
+
+    /// <summary>
+    /// Matches what the model actually passed against the things that exist.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// An exact-match lookup here is a trap, because the argument is written by a language
+    /// model reading prose. Observed: the plot holds <c>C-1</c>, the captain asks about the
+    /// freighter, and the model calls <c>AnalyseContact("MV Anselm")</c> — the designation,
+    /// which is the name the captain used and the more prominent half of the sensor line.
+    /// The tool answered "no contact 'MV Anselm' on the plot", the agent relayed that as the
+    /// contact not existing, and the captain was looking straight at it on the panel. The
+    /// same miss came from <c>C1</c>, <c>"C-1"</c>, a trailing full stop, and an en dash
+    /// picked up from the em dash in the tool's own output.
+    /// </para>
+    /// <para>
+    /// The leniency lives here, at the tool boundary, and not in the simulation:
+    /// <c>Sections</c> and <c>Contacts</c> stay exactly as strict as they are. Being generous
+    /// about what an argument may look like is an adapter's job; a domain that guesses what
+    /// you meant is a domain you cannot test.
+    /// </para>
+    /// <para>
+    /// Tiered rather than fuzzy, and an ambiguous match is reported rather than resolved. A
+    /// tool that silently picks one of two contacts is worse than one that says it cannot
+    /// tell them apart: the second is a sentence the agent can act on, the first is a wrong
+    /// answer delivered with confidence.
+    /// </para>
+    /// </remarks>
+    private static List<T> Resolve<T>(IReadOnlyList<T> candidates, string input, Func<T, string[]> keys)
+    {
+        var needle = Normalise(input);
+
+        if (needle.Length == 0)
+        {
+            return [];
+        }
+
+        List<T> Matching(Func<string, bool> predicate)
+            => [.. candidates.Where(c => keys(c).Any(k => predicate(Normalise(k))))];
+
+        // 'C1', ' C-1 ', 'C-1.', '"C-1"', 'C–1' and 'MV Anselm' all land here.
+        if (Matching(key => key == needle) is { Count: > 0 } exact)
+        {
+            return exact;
+        }
+
+        // 'C' for 'Section C', 'Anselm' for 'MV Anselm'.
+        if (Matching(key => key.StartsWith(needle, StringComparison.Ordinal)
+                         || key.EndsWith(needle, StringComparison.Ordinal)) is { Count: > 0 } edge)
+        {
+            return edge;
+        }
+
+        // 'contact C-1' and 'the Anselm freighter'. Short needles are excluded because a
+        // single letter is inside half the names on the ship and matches nothing usefully.
+        return needle.Length < 3
+            ? []
+            : Matching(key => key.Contains(needle, StringComparison.Ordinal)
+                           || needle.Contains(key, StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Strips a string to its letters and digits, lowercased.
+    /// </summary>
+    /// <remarks>
+    /// Everything a model adds around an identifier — quotes, spaces, a trailing full stop,
+    /// a hyphen it dropped or an en dash it substituted — disappears, so <c>C1</c>, <c>C-1</c>
+    /// and <c>C–1</c> all normalise to <c>c1</c>.
+    /// </remarks>
+    private static string Normalise(string value)
+    {
+        var buffer = new StringBuilder(value.Length);
+
+        foreach (var character in value)
+        {
+            if (char.IsLetterOrDigit(character))
+            {
+                buffer.Append(char.ToLowerInvariant(character));
+            }
+        }
+
+        return buffer.ToString();
     }
 
     /// <summary>

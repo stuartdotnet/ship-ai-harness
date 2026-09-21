@@ -1,6 +1,7 @@
 {
   "name": "Derelict Freighter",
   "briefing": "ISV Kestrel is nine hours from the Halveston rendezvous with a hold full of medical cargo. Twenty minutes ago the long-range array picked up a repeating distress beacon on a heading that costs us four hours we do not have. The captain has ordered an approach. You are running sensors and analysis for this approach, nothing else: helm, engineering and damage control are crewed and answer to the captain directly, not to you. Your job is to tell the captain what is out there and what it means, early enough to matter.",
+  "situation": "You are the captain of the ISV Kestrel, nine hours from the Halveston rendezvous with a hold of medical cargo. A repeating distress beacon has just come in, on a heading that costs you four hours you do not have. You have ordered the approach.",
   "initialState": {
     "hull": 100,
     "reactor": { "output": 100, "heat": 18 },

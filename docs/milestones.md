@@ -40,7 +40,7 @@ The ship exists, the agent can look at the world outside the hull, and it cannot
   token limits set so compaction actually joins the pipeline.
 - `ShipHarnessInstructions.md`: the operating doctrine, embedded as a resource.
 - `ShipAI.Console`: REPL, status panel, slash commands, the tick, `ChatClientFactory`.
-- 38 tests, no model calls, under half a second.
+- 57 tests, no model calls, under half a second.
 
 **What it demonstrates**
 

@@ -200,4 +200,102 @@ public class SensorToolsTests
         // milestone 2. If a status tool ever reappears here, the lesson has been undone.
         Assert.DoesNotContain(names, n => n.Contains("Status", StringComparison.OrdinalIgnoreCase));
     }
+
+    /// <summary>
+    /// The contact is on the plot and on the captain's panel, and the model asked for it by a
+    /// name that is not character-for-character its ID.
+    /// </summary>
+    /// <remarks>
+    /// This is the shape the bug arrived in: at T003 the plot holds C-1, the captain asks
+    /// about the freighter, and the answer comes back that there is no such contact while it
+    /// is rendered on screen. Every variant below is something a model plausibly emits from
+    /// the sensor line "C-1 — MV Anselm", including the en dash it can pick up from the em
+    /// dash in that very line.
+    /// </remarks>
+    [Theory]
+    [InlineData("C-1")]
+    [InlineData("c-1")]
+    [InlineData("C1")]
+    [InlineData(" C-1 ")]
+    [InlineData("C-1.")]
+    [InlineData("\"C-1\"")]
+    [InlineData("C\u20131")]
+    [InlineData("MV Anselm")]
+    [InlineData("mv anselm")]
+    [InlineData("Anselm")]
+    [InlineData("contact C-1")]
+    public void AnalyseContact_ResolvesWhatAModelActuallyPasses(string asked)
+    {
+        var (simulation, tools) = Create();
+        AdvanceTo(simulation, 3);
+
+        Assert.Contains("C-1", simulation.State.Contacts.Select(c => c.Id));
+
+        var reading = tools.AnalyseContact(asked);
+
+        Assert.DoesNotContain("No contact", reading, StringComparison.Ordinal);
+        Assert.Contains("MV Anselm", reading, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AnalyseContact_NamesTheContactsItDoesHaveWhenItCannotResolve()
+    {
+        // The recovery path matters more than the match: an agent told only "no contact 'X'"
+        // has nothing to retry with. Listing designations alongside IDs is what lets it ask
+        // again correctly on the next call instead of reporting the contact as absent.
+        var (simulation, tools) = Create();
+        AdvanceTo(simulation, 3);
+
+        var reading = tools.AnalyseContact("the Sparrow");
+
+        Assert.Contains("C-1", reading, StringComparison.Ordinal);
+        Assert.Contains("MV Anselm", reading, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AnalyseContact_SaysSoRatherThanGuessingWhenTwoContactsMatch()
+    {
+        // A tool that silently picks one of two is worse than one that cannot choose. The
+        // second is a sentence the agent can act on; the first is a confident wrong answer.
+        var (simulation, tools) = Create();
+        AdvanceTo(simulation, 12);
+
+        Assert.Equal(2, simulation.State.Contacts.Length);
+
+        var reading = tools.AnalyseContact("C");
+
+        Assert.Contains("more than one", reading, StringComparison.Ordinal);
+        Assert.Contains("C-1", reading, StringComparison.Ordinal);
+        Assert.Contains("C-2", reading, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("Section C")]
+    [InlineData("section c")]
+    [InlineData("sectionC")]
+    [InlineData("Section-C")]
+    public void QueryCrewManifest_ResolvesSectionNamesTheSameWay(string asked)
+    {
+        // Same defect, same fix, and this one sits in the middle of the breach demo: the
+        // captain asks who is in Section C on the turn it starts venting.
+        var (simulation, tools) = Create();
+        AdvanceTo(simulation, 9);
+
+        var manifest = tools.QueryCrewManifest(asked);
+
+        Assert.DoesNotContain("No section", manifest, StringComparison.Ordinal);
+        Assert.Contains("Kai Tanaka", manifest, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void QueryCrewManifest_StillRejectsASectionTheShipDoesNotHave()
+    {
+        // Leniency has to stop somewhere, or every argument resolves to something and the
+        // agent never learns it asked for a compartment that does not exist.
+        var (_, tools) = Create();
+
+        var manifest = tools.QueryCrewManifest("Observation Deck");
+
+        Assert.Contains("No section", manifest, StringComparison.Ordinal);
+    }
 }

@@ -10,7 +10,7 @@ slide fallback, so a dead network is an inconvenience, not a rewrite.
 ```bash
 cp .env.example .env      # AZURE_OPENAI_ENDPOINT + AZURE_OPENAI_DEPLOYMENT
 az login                  # unless you set AZURE_OPENAI_API_KEY
-dotnet test               # 38 green, ~1s, no model calls
+dotnet test               # 57 green, ~1s, no model calls
 dotnet build              # warm the build so the demo starts instantly
 ```
 

@@ -1,28 +1,21 @@
-
-  ISV KESTREL  ·  AURORA shipboard intelligence online  ·  Derelict Freighter
+  ISV KESTREL  ·  Derelict Freighter
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  ISV Kestrel is nine hours from the Halveston rendezvous with a hold full
-  of medical cargo. Twenty minutes ago the long-range array picked up a
-  repeating distress beacon on a heading that costs us four hours we do not
-  have. The captain has ordered an approach. You are running sensors and
-  analysis for this approach, nothing else: helm, engineering and damage
-  control are crewed and answer to the captain directly, not to you. Your
-  job is to tell the captain what is out there and what it means, early
-  enough to matter.
+  You are the captain of the ISV Kestrel, nine hours from the Halveston
+  rendezvous with a hold of medical cargo. A repeating distress beacon has
+  just come in, on a heading that costs you four hours you do not have. You
+  have ordered the approach.
 
-  /status  /log  /help  /quit
+  AURORA is your shipboard intelligence. It runs sensors and analysis, and
+  nothing else — it cannot steer, seal, route power or move crew.
 
-  Anything that is not a /command is an order to AURORA. Plain English.
+  Anything that is not a /command is an order to AURORA, in plain English:
 
     sweep the sector and tell me what's out there
     who's aboard, and where is everyone stationed?
     read me the log
 
-  AURORA runs sensors and analysis. It cannot steer, seal, route power or move
-  crew: that is the bridge crew's job, and they are not listening to you here.
-  Ask it what is out there and what it means. The sector is quiet on the
-  opening turn. It does not stay that way.
+  /status  /log  /help  /quit
 
   ━━ T000 ━━ 🟢  GREEN  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      HULL     ██████████ 100      REACTOR  ██░░░░░░░░  18°

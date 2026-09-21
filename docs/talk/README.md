@@ -53,7 +53,7 @@ is the real path, and somebody in the room will open it.
 The numbers on the slides come from the repo, so they drift when the repo does. Three to re-check
 before you present:
 
-- **`dotnet test`** — the deck says 38 tests (slides 9, 37, 41). Update it if that has moved.
+- **`dotnet test`** — the deck says 57 tests (slides 9, 37, 41). Update it if that has moved.
 - **Milestone status** — slides 36 and 41 claim what is built. `../milestones.md` is the source of
   truth; re-read it before you present if the repo has moved on.
 - **The panel screenshots** are seed 1701 on `derelict-freighter`. Regenerate with

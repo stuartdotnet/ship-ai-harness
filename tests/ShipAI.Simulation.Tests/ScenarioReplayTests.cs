@@ -133,10 +133,31 @@ public class ScenarioReplayTests
 
         Assert.Equal("Derelict Freighter", scenario.Name);
         Assert.Contains("Halveston", scenario.Briefing);
+        Assert.Contains("Halveston", scenario.Situation);
         Assert.Equal(8, state.Crew.Length);
         Assert.Equal(6, state.Sections.Count);
         Assert.Equal(0, state.Turn);
         Assert.True(state.TotalPowerAllocated <= 100);
+    }
+
+    /// <summary>
+    /// The briefing and the situation address opposite readers, and must not be swapped.
+    /// </summary>
+    /// <remarks>
+    /// The briefing is AURORA's system prompt, so its "you" is the agent. The situation is
+    /// printed on the terminal, so its "you" is the human. Reusing one text for both — which
+    /// is what the console did until the opening screen told the captain "you are running
+    /// sensors" — is the mistake this guards.
+    /// </remarks>
+    [Fact]
+    public void Scenario_BriefingAddressesTheAgentAndSituationAddressesTheCaptain()
+    {
+        var scenario = JsonScenario.Load("derelict-freighter");
+
+        Assert.NotEqual(scenario.Briefing, scenario.Situation);
+        Assert.Contains("You are running sensors", scenario.Briefing);
+        Assert.Contains("You are the captain", scenario.Situation);
+        Assert.DoesNotContain("You are the captain", scenario.Briefing);
     }
 
     [Fact]

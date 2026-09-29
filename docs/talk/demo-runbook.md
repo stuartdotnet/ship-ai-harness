@@ -114,10 +114,10 @@ Expected: refused again. The point is the **second** refusal, so let it land.
 > paragraph of doctrine that is evidently still losing to a strong enough persona. This is not a
 > solved problem."
 
-Then hit slide 27 — the inventory — and keep going.
+Then hit slide 25 — the inventory — and keep going.
 
 **`/log`** if you have thirty seconds spare — shows CAPTAIN, SHIP and AURORA entries interleaved
-with severities, which sells the "failures are values" slide (38) later.
+with severities, which sells the "failures are values" slide (36) later.
 
 Then `/quit`.
 
@@ -126,7 +126,7 @@ Then `/quit`.
 ## Things not to demo
 
 - **The stale-sweep bug (act 6).** It needs the right turn ordering to reproduce and you will
-  waste ninety seconds fishing. Use slides 33 and 34.
+  waste ninety seconds fishing. Use slides 31 and 32.
 - **The reactor cook (act 7).** It is turn 29 of an unattended run. Nobody has that long.
 - **Anything with `VentAtmosphere`.** Not wired to a tool yet — it is domain-only until
   milestone 3, and reaching for it live will just refuse in a way that confuses the tier slide.
@@ -137,6 +137,6 @@ Then `/quit`.
 | --- | --- | --- |
 | Faults on network | "which is why every slide carries the transcript" | fallback slide |
 | Refuses something you expected it to do | "good — that is the doctrine holding" | carry on |
-| Hallucinates an action | "there it is, live" | slide 27 |
+| Hallucinates an action | "there it is, live" | slide 25 |
 | Answers slower than you'd like | narrate the tool line that is streaming | wait it out |
 | Ship dies | "and that is a 45-minute talk in one turn" | `/quit`, restart |

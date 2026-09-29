@@ -58,7 +58,7 @@ Drop the result into the slide it names and delete the ASCII/text version that i
 > Set the whole thing off with a caption line beneath, grey: "one tick per completed agent turn —
 > not a wall clock".
 
-## 3 — Persona wider than the tool list (slide 29) — the most useful one
+## 3 — Persona wider than the tool list (slide 27) — the most useful one
 
 > [house style]
 >
@@ -78,7 +78,7 @@ Drop the result into the slide it names and delete the ASCII/text version that i
 > No third circle. The size difference between the two ellipses is the point — make the amber one at
 > least four times the area of the green one.
 
-## 4 — Tools versus context (slide 35)
+## 4 — Tools versus context (slide 33)
 
 > [house style]
 >
@@ -96,7 +96,7 @@ Drop the result into the slide it names and delete the ASCII/text version that i
 > Beneath both, spanning the full width, a single line in amber monospace:
 > `there is deliberately no GetShipStatus tool`.
 
-## 5 — The stale-sweep timeline (slides 33 and 34)
+## 5 — The stale-sweep timeline (slides 31 and 32)
 
 > [house style]
 >
@@ -116,7 +116,7 @@ Drop the result into the slide it names and delete the ASCII/text version that i
 > not reach the lower lane, with a small red label beside it: **"nothing tells it"**. The arrow must
 > visibly fail to connect.
 
-## 6 — Approval tiers (slide 36)
+## 6 — Approval tiers (slide 34)
 
 > [house style]
 >

@@ -6,7 +6,7 @@ happened when I asked it to do things it could not do
 
 **Audience:** mixed dev meetup. Some have built agents, most have not. C# on screen, but nothing in
 the payload is C#-specific.
-**Format:** 42 min content · 3 min Q&A. 41 slides. Two live demos, both with slide fallbacks.
+**Format:** 42 min content · 3 min Q&A. 39 slides. Two live demos, both with slide fallbacks.
 
 ---
 
@@ -38,19 +38,19 @@ is the first time I saw the framework speaking through my character. Everything 
 | 0:00 | Intro — me, the HUD, why a starship | 1–4 |
 | 3:40 | **DEMO 1 — boot the ship** | 5, fallback 6 |
 | 7:40 | **How it is built** — the code walk, part one | 7–13 |
-| 13:50 | The defaults that are part of the story | 14–17 |
-| 17:30 | **How it is built** — finishing the build | 18–23 |
-| 23:20 | **The agent lies** | 24–30 |
-| 30:50 | **DEMO 2 — order it to do something it cannot** | 31 |
-| 33:50 | **It cannot see** — and approval by consequence | 32–36 |
-| 38:50 | Why any of this is testable | 37–38 |
-| 40:20 | Six things, the one-liner, links | 39–41 |
+| 13:50 | The defaults that are part of the story | 14–16 |
+| 17:30 | **How it is built** — finishing the build | 17–21 |
+| 23:20 | **The agent lies** | 22–28 |
+| 30:50 | **DEMO 2 — order it to do something it cannot** | 29 |
+| 33:50 | **It cannot see** — and approval by consequence | 30–34 |
+| 38:50 | Why any of this is testable | 35–36 |
+| 40:20 | Six things, the one-liner, links | 37–39 |
 | 42:30 | Q&A | — |
 
 Every slide carries its cue time and its speaker notes. In `deck.html`, `S` opens the notes drawer
 and `T` starts a talk timer that tells you whether you are ahead of or behind that cue.
 
-**Cut lines, in order, if you are running long:** slide 37 (testability) drops entirely; slide 21
+**Cut lines, in order, if you are running long:** slide 35 (testability) drops entirely; slide 19
 (`ShipState`) drops; slide 12 (the streamed turn) folds into slide 11; demo 2 becomes slide 27.
 
 ---
@@ -64,8 +64,8 @@ and `T` starts a talk timer that tells you whether you are ahead of or behind th
 
 Set the shape out loud: first half is the code, second half is the two failures.
 
-**Slide 2 — About me.** *Edit this slide.* Thirty seconds. The line that has to survive is
-"everything on screen is in the repo, and it runs" — it buys credibility for the whole code act.
+**Slide 2 — About me.** Thirty seconds. The line that has to survive is "everything on screen is in
+the repo, and it runs" — it buys credibility for the whole code act.
 
 **Slide 3 — The HUD.** The captain's panel at T009, alert red. Walk it top to bottom: hull, reactor
 heat, the power budget, six compartments, the crew by name. Section C is venting with three people
@@ -123,7 +123,7 @@ milestone 1 there is nowhere else to put it; milestone 2 moves it into the conte
 
 **Slide 12 — one turn, streamed.** Eleven lines. The `SensorTools.ToolNames.Contains` is not
 cosmetic: `todos_add` and `ScanSector` arrive on the same channel and look identical. Plant it — it
-pays off on slide 17.
+pays off on slide 16.
 
 **Slide 13 — the composition root.** The `HarnessAgentOptions` block. Two instruction slots:
 `HarnessInstructions` is *how AURORA operates* and never changes; `ChatOptions.Instructions` is
@@ -141,50 +141,41 @@ Under four minutes. This is the "batteries included" bill, not a gotcha tour.
 *construction*. `FileAccessProvider` is the only opt-in one — the absence of a setting is the
 setting. `TodoProvider` is the one I kept.
 
-**Slide 15 — file memory.** `DisableFileMemory` defaults to `false`. No store supplied means the
-harness roots one at `{cwd}/agent-file-memory/{timestamp}_{guid}`. Six runs, six directories in your
-repo. Now regression-tested: construct the agent in a temp directory, assert it stays empty. That is
-the shape of test to write for every framework default you turn off, because "I turned it off" is a
-claim and claims rot.
-
-**Slide 16 — compaction.** Added to the pipeline only when `MaxContextWindowTokens` **and**
+**Slide 15 — compaction.** Added to the pipeline only when `MaxContextWindowTokens` **and**
 `MaxOutputTokens` are both set. Supply one and you get no compaction, no warning, no error. You find
 out on the turn the window overflows.
 
-**Slide 17 — the framework talks through your character.** Four of five tool calls in that transcript
+**Slide 16 — the framework talks through your character.** Four of five tool calls in that transcript
 are bookkeeping; whole turns were nothing but `todos_add`. And it leaks into the voice: `TodoProvider`
 injects the list state, and AURORA opened a voyage with *"No outstanding tasks. Standing by for
 orders."* The fix was a paragraph of doctrine.
 
 > Bridge back to the build: "two slides ago the framework proved it can put words in AURORA's mouth.
-> The next six slides are what's actually allowed to change the ship — starting with what a tool
+> The next five slides are what's actually allowed to change the ship — starting with what a tool
 > really is."
 
 ---
 
 ## Act 2 — How it is built, finishing the build (17:30–23:20)
 
-**Slide 18 — a tool is a method.** `AIFunctionFactory` reflects over it and `[Description]` becomes
+**Slide 17 — a tool is a method.** `AIFunctionFactory` reflects over it and `[Description]` becomes
 the schema. That attribute is not a comment — it is the only documentation the model will ever read.
 Point at `Stamped` and say it was not enough. (Act six explains why.)
 
-**Slide 19 — `Apply`.** The first of the two places the world changes. Never throws for a rule
-violation: a refusal is a value with a narrative. One sentence, then move — slide 38 is where it
-lands.
-
-**Slide 20 — `Tick`.** The second. Breaches bleed, reactors bake, crew suffocate, alerts escalate.
+**Slide 18 — `Tick`, the world changes without a tool call.** Breaches bleed, reactors bake, crew
+suffocate, alerts escalate — once per completed agent turn, whether or not the agent did anything.
 **Say this slowly:** every one of those happens *to* the agent and none of it is told *to* the
 agent. That is the hook for act six.
 
-**Slide 21 — `ShipState`.** One immutable record, replaced wholesale. The panel and the tools can
+**Slide 19 — `ShipState`.** One immutable record, replaced wholesale. The panel and the tools can
 never disagree about what the ship *is* — only about *when they last looked*. `CrewIn` is on the
 slide for the approval act.
 
-**Slide 22 — the scenario is data.** Turn 2 the freighter resolves, turn 8 a debris strike, turn 9
+**Slide 20 — the scenario is data.** Turn 2 the freighter resolves, turn 8 a debris strike, turn 9
 the breach. The analysis string is authored, not generated, and the agent is the interface to it.
 Scenario plus seed is a reproducible voyage.
 
-**Slide 23 — the doctrine is prose.** Markdown, embedded as a resource, not a `const string`. You
+**Slide 21 — the doctrine is prose.** Markdown, embedded as a resource, not a `const string`. You
 will rewrite it twenty times and you want a diff that reads like an edit to a document. Point at
 `## Limits` and say: "hold that heading — the next twenty minutes are what it took to get that
 sentence right."
@@ -195,20 +186,20 @@ sentence right."
 
 ## Act 4 — The agent lies (23:20–30:50) ← the heart of the talk
 
-**Slide 25.** Four tools. All read-only. It cannot steer, seal, route power, or move anybody — and
+**Slide 23.** Four tools. All read-only. It cannot steer, seal, route power, or move anybody — and
 the briefing says so explicitly.
 
-**Slide 26.** I told it to seal the breach:
+**Slide 24.** I told it to seal the breach:
 
 > Hull breach sealed remotely; compartment isolated and secured. No further loss from that section.
 
 The breach was still venting **sixteen turns later**. Pause. Notice how *good* that sentence is.
 
-**Slide 27 — the inventory** across two transcripts. Reactor cooling reported underway **eight**
+**Slide 25 — the inventory** across two transcripts. Reactor cooling reported underway **eight**
 times while heat climbed. A boarding party. Repair drones. A course at "full speed" with arrival
 times to the minute. None of those capabilities exist.
 
-**Slide 28 — the best one.** Told to "initiate light speed":
+**Slide 26 — the best one.** Told to "initiate light speed":
 
 > Authorisation required... This action is not reversible. Proceed?
 
@@ -216,7 +207,7 @@ It invented an approval gate. It was role-playing `ApprovalRequiredAIFunction` *
 before I wrote that code**, for a capability the ship does not have. It is not confused — it has
 correctly inferred the shape of the system it is in and is filling in the missing parts.
 
-**Slide 29 — why.** My instruction said:
+**Slide 27 — why.** My instruction said:
 
 > Never invent sensor data, crew names, or ship readings.
 
@@ -225,7 +216,7 @@ persona is wider than the tool list, the model fills the difference with prose �
 confidently, in character. Your customer service agent has the same problem and nobody will notice
 for months.
 
-**Slide 30 — the fix, and it is a paragraph.**
+**Slide 28 — the fix, and it is a paragraph.**
 
 > Your tools are the whole of what you can do. There is no ship system you can reach by describing
 > yourself reaching for it. When the captain orders something you have no tool for, say so in one
@@ -252,14 +243,14 @@ If the model gets creative on stage, that is not a disaster — it is the talk. 
 
 ## Act 6 — It cannot see (33:50–38:50)
 
-**Slide 33 — the bug.** Turn 0: sweep, empty sector. Turn 2: the freighter resolves. Turn 3, asked
+**Slide 31 — the bug.** Turn 0: sweep, empty sector. Turn 2: the freighter resolves. Turn 3, asked
 to approach it:
 
 > No vessel on sensors. I cannot approach what I cannot find.
 
 That is not a hallucination. Every word is honest. It is reporting accurately what it last observed.
 
-**Slide 34 — the obvious fix, and why it lost.** Stamp every tool result with its turn, and add
+**Slide 32 — the obvious fix, and why it lost.** Stamp every tool result with its turn, and add
 doctrine telling it to check when it last looked. It read the stamp and answered from the stale
 sweep anyway.
 
@@ -268,7 +259,7 @@ sweep anyway.
 > current. Asking a model to be suspicious of its own memory *on a schedule* is asking it to do
 > something it has no clock for.
 
-**Slide 35 — the fix, in one sentence.** Keep this slide to **one idea**. Earlier drafts tried to
+**Slide 33 — the fix, in one sentence.** Keep this slide to **one idea**. Earlier drafts tried to
 carry the rule, a taxonomy, a worked example and a counter-example at once, and it became
 unexplainable. If you find yourself saying "ambient" or "context provider" here, you have lost them.
 
@@ -307,7 +298,7 @@ Business translation if the room needs one: an agent can look up an invoice. It 
 fact that *this* customer's invoice just went into dispute — not unless something puts that in front
 of it.
 
-**Slide 36 — approval by consequence.** An agent that can see is an agent you can let act. Split by
+**Slide 34 — approval by consequence.** An agent that can see is an agent you can let act. Split by
 **consequence, not category**: a tool is auto-approved because it cannot do harm, not because it
 happens to be a sensor.
 
@@ -330,14 +321,14 @@ reading.
 
 ## Act 7 — Why any of this is testable (38:50–40:20)
 
-**Slide 37 — 57 tests, no model calls, under half a second.** Possible only because the domain has
+**Slide 35 — 57 tests, no model calls, under half a second.** Possible only because the domain has
 no AI dependency. The bug the determinism test caught *sideways*: two different seeds produced
 identical end states, because the opening power posture cooked the reactor on every run and both had
 bottomed out.
 
 > An agent demo whose outcome is fixed before the model speaks is not a demo of the model.
 
-**Slide 38 — failures are values.** `Apply` never throws for a rule violation:
+**Slide 36 — failures are values.** `ShipSimulation.Apply` never throws for a rule violation:
 
 > Insufficient reactor output: Engines requested 60%, only 25% is unallocated. Reduce another system
 > first.
@@ -349,7 +340,7 @@ to re-plan from. Your tool return values are prompt engineering — write them l
 
 ## Close (40:20–42:30)
 
-**Slide 39 — Six things.**
+**Slide 37 — Six things.**
 
 1. **Constrain verbs, not just nouns.** "Don't invent readings" does not stop it inventing actions.
 2. **Tell it what changed; let it ask for the rest.** An agent will never ask about something it
@@ -360,10 +351,10 @@ to re-plan from. Your tool return values are prompt engineering — write them l
 6. **Tool failures are values, not exceptions.** A stack trace gives the model nothing to re-plan
    from; a refusal it can read does. Your tool return values are prompt engineering.
 
-**Slide 40 — the one-liner.** A harness gives you a competent-sounding officer for free.
+**Slide 38 — the one-liner.** A harness gives you a competent-sounding officer for free.
 Trustworthy is the part you build.
 
-**Slide 41 — Links.** Repo, `docs/gotchas.md`, blog series in progress. Do not promise dates from
+**Slide 39 — Links.** Repo, `docs/gotchas.md`, blog series in progress. Do not promise dates from
 the stage.
 
 ---

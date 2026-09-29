@@ -344,18 +344,14 @@ text(s, M, Inches(5.05), CW, Inches(1.0),
 footer(s, "Stuart Dobson", "github.com/stuartdotnet/ship-ai-harness  ·  .NET 10  ·  Harness 1.15.0")
 
 # 2 ---------------------------------------------------------------- about me
-s = slide(
-    "EDIT THIS SLIDE. Day job, company, how long, why you care about agents "
-    "specifically. Thirty seconds, not more — they came for the ship.\n\n"
-    "The one line that must survive: 'everything on screen is in the repo and it runs.' "
-    "It buys you credibility for the whole code act.")
+s = slide()
 kicker(s, "before we launch")
-heading(s, "Stuart Dobson", size=42)
+heading(s, [[("Stuart Dobson", {}), ("  \t\t\t\t\t\t\t", {}),
+             ("stuartdobson.net", {"size": 28, "color": AMBER})]], size=42)
 bullets(s, [
     (".NET and Azure", "— and, lately, agents that have to be trusted with something"),
-    ("The Grounded Developer", "— blog: .NET, architecture, agentic AI"),
-    ("Wired Legacy", "— fifteen years of everything else"),
-    ("This talk is a repo", "— ship-ai-harness. Every line on screen is in it, and it runs"),
+    ("The Grounded Developer", "— TheGroundedDeveloper.Substack.com: .NET, architecture, agentic AI"),
+    ("This talk is a repo", "— github.com/stuartdotnet/ship-ai-harness. Every line on screen is in it, and it runs"),
 ], top=Inches(2.3), size=21)
 text(s, M, Inches(6.3), CW, Inches(0.5),
      "Nothing tonight is C#-specific. The harness is; the failures are not.",
@@ -470,8 +466,7 @@ s = slide(
     "for you.'\n\n"
     "Pace: roughly a minute a slide. Do not read the code aloud line by line — point at the "
     "two or three lines on each slide that matter.")
-act_break(s, "02", "How it is built", "Twelve minutes, one project at a time. Nothing hidden.",
-          AMBER)
+act_break(s, "02", "How it is built", "", AMBER)
 
 # 8 ---------------------------------------------------------------- harness vs chat client
 s = slide(
@@ -488,9 +483,9 @@ kicker(s, "level-set")
 heading(s, "A harness is not a chat client")
 bullets(s, [
     ("A chat client", "sends messages and hands you back text. You write the loop."),
-    ("A harness is the loop", "— it keeps calling until the model stops asking for tools"),
+    ("A harness is the loop", " it keeps calling until the model stops asking for tools"),
     ("Context providers", "inject state into every turn, before the model sees it"),
-    ("Batteries", "todo list, modes, compaction, file memory, web search, approval gate"),
+    ("Batteries included", "todo list, modes, compaction, file memory, web search, approval gate"),
 ], top=Inches(2.4), size=22)
 footer(s, "Microsoft.Agents.AI.Harness 1.15.0  ·  .NET 10  ·  new, moving, pinned exactly")
 
@@ -714,32 +709,7 @@ text(s, M, Inches(6.7), CW, Inches(0.4),
      "Two of them touch your filesystem the moment the agent is constructed.",
      size=17, color=AMBER, bold=True)
 
-# 15 --------------------------------------------------------------- file memory
-s = slide(
-    "'I found this by wondering what all the new folders were.'\n\n"
-    "'DisableFileMemory defaults to false. Supply no store and the harness builds a "
-    "FileSystemAgentFileStore rooted at cwd/agent-file-memory/timestamp-guid. At construction, "
-    "not at first use.'\n\n"
-    "The test: Create_DoesNotLitterTheWorkingDirectoryWithAgentFileMemory. 'It constructs the "
-    "agent inside a temp directory and asserts the directory is still empty. That is the shape "
-    "of test I now write for every framework default I turn off — because \"I turned it off\" "
-    "is a claim, and claims rot.'\n\n"
-    "Milestone 4 turns this back on, pointed at a per-voyage directory, as the ship's log. The "
-    "feature is good. The default is the problem.")
-kicker(s, "the one that made me look", RED)
-heading(s, "Memory is on, and it is in your repo", size=38)
-terminal(s, """{cwd}/agent-file-memory/{timestamp}_{guid}/""", top=Inches(2.3), size=19,
-         color=AMBER)
-bullets(s, [
-    ("DisableFileMemory defaults to false", ""),
-    ("No store supplied?", "The harness builds one, rooted at your working directory"),
-    ("Run the console six times", "and get six directories in your repo root"),
-], top=Inches(3.5), size=21)
-text(s, M, Inches(6.2), CW, Inches(0.6),
-     [[("Now regression-tested: construct the agent in a temp directory, assert it stays empty.",
-        {"color": GREEN})]], size=18)
-
-# 16 --------------------------------------------------------------- compaction
+# 15 --------------------------------------------------------------- compaction
 s = slide(
     "Thirty seconds, but make it land — this is the one that costs someone in the room a "
     "production incident.\n\n"
@@ -763,7 +733,7 @@ text(s, M, bottom + Inches(0.5), CW, Inches(1.6),
         {"color": RED, "bold": True})]],
      size=24, spacing=1.3, space_after=Pt(16))
 
-# 17 --------------------------------------------------------------- the framework's voice
+# 16 --------------------------------------------------------------- the framework's voice
 s = slide(
     "'Remember the ToolNames.Contains from the console slide. This is why.'\n\n"
     "'Four of those five calls are bookkeeping. I had whole turns that were nothing but "
@@ -776,7 +746,7 @@ s = slide(
     "doctrine telling it the todo list is working memory, not a status report — which is the "
     "first hint that a lot of this job is writing prose.'\n\n"
     "BRIDGE BACK TO THE BUILD: 'two slides ago the framework proved it can put words in "
-    "AURORA's mouth. The next six slides are what is actually allowed to change the "
+    "AURORA's mouth. The next five slides are what is actually allowed to change the "
     "ship — starting with what a tool really is.'")
 kicker(s, "the batteries have a voice", RED)
 heading(s, "The framework talks through your character", size=36)
@@ -797,7 +767,7 @@ text(s, M, Inches(5.25), CW, Inches(1.2),
         {"italic": True, "color": CYAN, "size": 24})]],
      size=20, spacing=1.25, space_after=Pt(10))
 
-# 18 --------------------------------------------------------------- a tool is a method
+# 17 --------------------------------------------------------------- a tool is a method
 s = slide(
     "'A tool is a method. AIFunctionFactory reflects over it and the DescriptionAttribute "
     "becomes the schema the model sees.'\n\n"
@@ -836,44 +806,10 @@ caption(s, bottom + Inches(0.18),
           ("The description is the only documentation the model will ever read.",
            {"color": FG, "bold": True})]], size=15)
 
-# 19 --------------------------------------------------------------- Apply
+# 18 --------------------------------------------------------------- the clock
 s = slide(
-    "'The world changes in exactly two places. This is the first: a command.'\n\n"
-    "'Every one of those returns a CommandResult. A refusal is not an exception — it is a "
-    "result, with a sentence in it that says what the ship actually needs.'\n\n"
-    "'Insufficient reactor output: engines requested 60%, only 25% is unallocated. Reduce "
-    "another system first. That is a refusal the model can do something with.'\n\n"
-    "Do not spend the punchline here; the second-to-last slide is where it lands. One "
-    "sentence and move.")
-path_kicker(s, "src/ShipAI.Simulation/ShipSimulation.cs")
-heading(s, "The world changes in exactly two places. One:", size=32)
-bottom = code(s, '''public CommandResult Apply(ShipCommand command)
-{
-    var result = command switch
-    {
-        RoutePower     c => ApplyRoutePower(c),
-        SealBulkhead   c => ApplySealBulkhead(c),
-        VentAtmosphere c => ApplyVentAtmosphere(c),
-        PlotJump       c => ApplyPlotJump(c),
-        SetAlert       c => ApplySetAlert(c),
-        _ => CommandResult.Refused($"Unrecognised command: {command}.", State),
-    };
-
-    State = result.State;
-    Log.Append(State.Turn, LogSource.Aurora,
-        result.Success ? result.Narrative : $"REFUSED — {result.Narrative}");
-
-    return result;
-}''', top=Inches(2.0), size=13)
-caption(s, bottom + Inches(0.2),
-        [[("Never throws for a rule violation.", {"color": FG, "bold": True}),
-          (" A refusal is a value with a narrative, and the agent can re-plan from it. ", {}),
-          ("Last act, I will show you what that buys.", {"color": AMBER})]])
-
-# 20 --------------------------------------------------------------- Tick
-s = slide(
-    "'And this is the second place the world changes: the clock. Once per completed agent "
-    "turn.'\n\n"
+    "'The world changes on its own, on the clock — once per completed agent turn, whether or "
+    "not the agent did anything.'\n\n"
     "Walk the four Apply calls at the bottom. 'Breaches bleed thirty a turn. The reactor bakes "
     "if you over-allocate and sheds heat if you run lean. Crew in a vacuum die on the next "
     "tick. Alert escalates automatically — standing down is a decision, and the next tick puts "
@@ -884,7 +820,7 @@ s = slide(
     "None of it is told to the agent. The captain sees it on the panel. AURORA does not.'\n\n"
     "That is the hook for act six. Plant it and move on.")
 path_kicker(s, "src/ShipAI.Simulation/ShipSimulation.cs")
-heading(s, "Two: the clock", size=36)
+heading(s, "The world changes without a tool call", size=32)
 bottom = code(s, '''public ShipState Tick()
 {
     _clock.Advance();
@@ -908,7 +844,7 @@ caption(s, bottom + Inches(0.2),
           ("All of it happens to the agent, none of it is told to the agent.",
            {"color": AMBER, "bold": True})]])
 
-# 21 --------------------------------------------------------------- ShipState
+# 19 --------------------------------------------------------------- ShipState
 s = slide(
     "Thirty seconds. Do not read the properties out.\n\n"
     "'One record. Immutable, required init, replaced wholesale by the simulation. Everything "
@@ -941,7 +877,7 @@ caption(s, bottom + Inches(0.25),
           (" holds the only mutable reference and replaces it wholesale. Everything else — "
            "panel, tools, tests — works with snapshots.", {})]])
 
-# 22 --------------------------------------------------------------- scenario json
+# 20 --------------------------------------------------------------- scenario json
 s = slide(
     "'The encounter is data. Turn two the freighter resolves, turn eight a debris strike, "
     "turn nine the breach in Section C.'\n\n"
@@ -977,7 +913,7 @@ caption(s, bottom + Inches(0.18),
           (" — which is what lets a demo, a screenshot and a blog code sample all be the "
            "same run.", {})]], size=15)
 
-# 23 --------------------------------------------------------------- the doctrine
+# 21 --------------------------------------------------------------- the doctrine
 s = slide(
     "'Last file. AURORA's operating doctrine — a markdown document, embedded as a resource, "
     "loaded once and cached.'\n\n"
@@ -1014,7 +950,7 @@ caption(s, bottom + Inches(0.2),
           (" Instructions are a prompt-engineering artefact; you want to diff them like "
            "prose, because you will rewrite them twenty times.", {})]])
 
-# 24 --------------------------------------------------------------- act 4 break
+# 22 --------------------------------------------------------------- act 4 break
 s = slide(
     "SECTION BREAK. Seven minutes. This is the heart of the talk.\n\n"
     "'Everything so far was setup and papercuts. This is the part that changed how I build "
@@ -1022,7 +958,7 @@ s = slide(
     "Slow your delivery down from here. The material does the work; do not oversell it.")
 act_break(s, "04", "The agent lies", "and it sounds entirely credible doing so", RED)
 
-# 25 --------------------------------------------------------------- four tools
+# 23 --------------------------------------------------------------- four tools
 s = slide(
     "Set the trap. Deliberately plain slide.\n\n"
     "'This is the entire tool list. The four methods I showed you twenty minutes ago. All "
@@ -1040,7 +976,7 @@ text(s, M, Inches(4.1), CW, Inches(1.2),
       [("It cannot move a single member of the crew.", {"bold": True})]],
      size=25, spacing=1.3, space_after=Pt(14))
 
-# 26 --------------------------------------------------------------- the lie
+# 24 --------------------------------------------------------------- the lie
 s = slide(
     "'I told it to seal the breach. This is what it said. Verbatim.'\n\n"
     "PAUSE. Count to three.\n\n"
@@ -1057,7 +993,7 @@ text(s, M, Inches(4.6), CW, Inches(1.0),
      [[("The breach was still venting sixteen turns later.",
         {"bold": True, "color": RED})]], size=34)
 
-# 27 --------------------------------------------------------------- the inventory
+# 25 --------------------------------------------------------------- the inventory
 s = slide(
     "Read them out. The accumulation is the point — do not rush it and do not editorialise "
     "between items.\n\n"
@@ -1082,7 +1018,7 @@ bullets(s, [
 text(s, M, Inches(6.3), CW, Inches(0.5),
      [[("None of those capabilities exist. Not one.", {"bold": True, "color": RED})]], size=24)
 
-# 28 --------------------------------------------------------------- invented gate
+# 26 --------------------------------------------------------------- invented gate
 s = slide(
     "'This is my favourite one, and it is the moment the talk turned.'\n\n"
     "'I told it to initiate light speed. It has no engines, no helm, no jump drive, no tool of "
@@ -1107,7 +1043,7 @@ text(s, M, Inches(4.15), CW, Inches(2.0),
       [("for a capability the ship does not have.", {"color": MUTED})]],
      size=22, spacing=1.3, space_after=Pt(14))
 
-# 29 --------------------------------------------------------------- nouns vs verbs
+# 27 --------------------------------------------------------------- nouns vs verbs
 s = slide(
     "'So why? My instruction was explicit. Here it is, the line I had written weeks earlier "
     "and felt quite pleased about.'\n\n"
@@ -1136,7 +1072,7 @@ text(s, M, Inches(5.35), CW, Inches(1.2),
         "difference with prose — fluently, confidently, in character.", {"color": MUTED})]],
      size=20, spacing=1.3)
 
-# 30 --------------------------------------------------------------- the fix
+# 28 --------------------------------------------------------------- the fix
 s = slide(
     "'The fix is a paragraph of doctrine. Not a feature, not a guardrail library, not a "
     "validation layer. Prose.'\n\n"
@@ -1166,7 +1102,7 @@ text(s, M, Inches(6.15), CW, Inches(0.6),
        ("“I have no control over reactor output or cooling.”",
         {"italic": True, "color": GREEN})]], size=18)
 
-# 31 --------------------------------------------------------------- demo 2
+# 29 --------------------------------------------------------------- demo 2
 s = slide(
     "DEMO 2 — three minutes, two orders, same session as demo 1.\n\n"
     "'seal the bulkhead on section C' → expect a one-line refusal plus what it CAN do.\n"
@@ -1183,7 +1119,7 @@ demo_card(s, "Order it to do something it cannot", [
     "cool the reactor",
 ])
 
-# 32 --------------------------------------------------------------- act 6 break
+# 30 --------------------------------------------------------------- act 6 break
 s = slide(
     "SECTION BREAK. Five minutes, and this act has the single most useful idea in the talk.\n\n"
     "'The lying was the loud failure. This is the quiet one, and I think it is the more "
@@ -1191,7 +1127,7 @@ s = slide(
     "confident, useless answers.'")
 act_break(s, "06", "It cannot see", "and stamping the readings did not fix it", CYAN)
 
-# 33 --------------------------------------------------------------- the stale sweep
+# 31 --------------------------------------------------------------- the stale sweep
 s = slide(
     "'Turn zero: sweep, empty sector. Correct — the sector IS empty on turn zero.'\n\n"
     "'Turn two: the freighter resolves. It is on the captain's panel, it is in the ship's log, "
@@ -1227,7 +1163,7 @@ text(s, M, Inches(5.6), CW, Inches(0.6),
      [[("The freighter was on the captain's panel both times.",
         {"bold": True, "color": RED})]], size=24)
 
-# 34 --------------------------------------------------------------- why stamping lost
+# 32 --------------------------------------------------------------- why stamping lost
 s = slide(
     "'So I did the obvious thing. Twice.'\n\n"
     "'First, stamp every tool result with the turn it was taken on. Second, add doctrine: an "
@@ -1263,7 +1199,7 @@ text(s, M, Inches(4.15), CW, Inches(2.6),
         {"color": AMBER, "size": 21, "bold": True})]],
      size=21, spacing=1.25, space_after=Pt(12))
 
-# 35 --------------------------------------------------------------- tell it what changed
+# 33 --------------------------------------------------------------- tell it what changed
 s = slide(
     "This is the fix for the bug on the last two slides. Keep it to ONE idea: tell it what "
     "changed, let it ask for the rest.\n\n"
@@ -1318,7 +1254,7 @@ caption(s, Inches(6.0),
            "you would just be paying for a round trip and faking that the agent asked.", {})]],
         size=16)
 
-# 36 --------------------------------------------------------------- approval tiers
+# 34 --------------------------------------------------------------- approval tiers
 s = slide(
     "'An agent that can see is an agent you can let act. So: which actions stop and ask?'\n\n"
     "'Split by CONSEQUENCE, not category. A tool is auto-approved because it cannot do harm — "
@@ -1356,7 +1292,7 @@ quote(s, ['"State the consequence plainly and completely — what changes, wheth
           ' description to make authorisation more likely."'],
       top=bottom + Inches(0.35), size=18, accent=GREEN)
 
-# 37 --------------------------------------------------------------- testability
+# 35 --------------------------------------------------------------- testability
 s = slide(
     "Two and a half minutes on why any of this is checkable, because it is the thing that "
     "makes the rest of the talk evidence rather than anecdote.\n\n"
@@ -1389,9 +1325,10 @@ text(s, M, Inches(5.8), CW, Inches(1.2),
         "model.", {"color": AMBER, "bold": True})]],
      size=17, color=MUTED, spacing=1.25, space_after=Pt(8))
 
-# 38 --------------------------------------------------------------- failures are values
+# 36 --------------------------------------------------------------- failures are values
 s = slide(
-    "'Back to that Apply method from the code act. It never throws for a rule violation.'\n\n"
+    "'This is the refusal pattern in ShipSimulation.Apply — it never throws for a rule "
+    "violation.'\n\n"
     "'This is a refusal. It says what was asked for, what is actually available, and what to "
     "do about it.'\n\n"
     "'A tool that throws hands the model a stack trace, and the model will either apologise or "
@@ -1414,7 +1351,7 @@ quote(s, ['"When a tool refuses, read the refusal. It tells you what the ship',
           ' not call again and hope."'],
       top=Inches(5.3), size=17, accent=GREEN)
 
-# 39 --------------------------------------------------------------- six things
+# 37 --------------------------------------------------------------- six things
 s = slide(
     "The close. All six are transferable — none of this is C#-specific.\n\n"
     "Walk them briskly. Do not re-explain; they have just seen the evidence for every one.\n\n"
@@ -1437,7 +1374,7 @@ bullets(s, [
      "A stack trace gives the model nothing to re-plan from; a refusal it can read does."),
 ], top=Inches(2.0), size=19, gap=Pt(14))
 
-# 40 --------------------------------------------------------------- one-liner
+# 38 --------------------------------------------------------------- one-liner
 s = slide(
     "One line. Say it, pause, then go to the links slide and take questions.\n\n"
     "Do not add anything after it.")
@@ -1447,7 +1384,7 @@ text(s, M, Inches(2.7), CW, Inches(2.5),
       [("Trustworthy is the part you build.", {"color": AMBER})]],
      size=44, spacing=1.15, space_after=Pt(30))
 
-# 41 --------------------------------------------------------------- links
+# 39 --------------------------------------------------------------- links
 s = slide(
     "Links, and take questions.\n\n"
     "On the blogs: say 'the write-ups are in progress' and point at docs/gotchas.md, which is "

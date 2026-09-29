@@ -12,7 +12,7 @@ agent answering confidently from a world that moved two turns ago.
 | `demo-runbook.md` | The two live demos, keystroke by keystroke, with a pre-flight checklist and a recovery cheatsheet |
 | `deck.html` | The presentation deck as a browser slide runner. Speaker notes and a talk timer built in |
 | `diagram-prompts.md` | Ready-to-paste prompts for generating the deck's diagrams in Copilot/ChatGPT |
-| `ship-ai-harness-talk.pptx` | The same 41 slides as PowerPoint, with the notes in the notes pane |
+| `ship-ai-harness-talk.pptx` | The same 39 slides as PowerPoint, with the notes in the notes pane |
 | `ship-ai-harness-talk.pdf` | Flattened backup, for a laptop that will not open either of the above |
 | `opening-panel.txt` | Real captured console output, seed 1701, T000 — the source for the fallback slide |
 
@@ -40,7 +40,7 @@ display and read the drawer, or present from the `.pptx` where the notes pane is
 
 ## The code slides
 
-Slides 10–19 are syntax-highlighted listings straight out of `src/`, lightly abridged to fit —
+Slides 10–18 are syntax-highlighted listings straight out of `src/`, lightly abridged to fit —
 ellipsis comments mark anything cut. Both decks highlight from the same small tokeniser (a regex in
 `deck.html`'s first script block, and `tokenize()` in `build-deck.py`), so a listing looks the same
 in the browser and in PowerPoint.
@@ -53,14 +53,11 @@ is the real path, and somebody in the room will open it.
 The numbers on the slides come from the repo, so they drift when the repo does. Three to re-check
 before you present:
 
-- **`dotnet test`** — the deck says 57 tests (slides 9, 37, 41). Update it if that has moved.
-- **Milestone status** — slides 36 and 41 claim what is built. `../milestones.md` is the source of
+- **`dotnet test`** — the deck says 57 tests (slides 9, 35, 39). Update it if that has moved.
+- **Milestone status** — slides 34 and 39 claim what is built. `../milestones.md` is the source of
   truth; re-read it before you present if the repo has moved on.
 - **The panel screenshots** are seed 1701 on `derelict-freighter`. Regenerate with
   `SHIPAI_SEED=1701 dotnet run --project src/ShipAI.Console` if the render changes.
-
-And **slide 2 is a placeholder.** It has your name on it and not much else — fill in the day job
-before you stand up.
 
 ## Rebuilding the .pptx
 

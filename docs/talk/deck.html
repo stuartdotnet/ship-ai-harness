@@ -324,18 +324,14 @@ Housekeeping: two live demos, repo link at the end, questions at the end.</div>
 <!-- 2 ────────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="0:30" data-act="0" data-title="About me">
   <p class="kicker">before we launch</p>
-  <h2>Stuart Dobson</h2>
+  <h2>Stuart Dobson <span class="amb" style="font-size:.5em">stuartdobson.net</span></h2>
   <ul class="pts">
-    <li><b>.NET and Azure</b> <span>— and, for the last while, agents that have to be trusted with something</span></li>
-    <li><b>The Grounded Developer</b> <span>— blog: .NET, architecture, agentic AI, and why the demo is never the hard part</span></li>
-    <li><b>Wired Legacy</b> <span>— fifteen years of everything else</span></li>
-    <li><b>This talk is a repo</b> <span>— ship-ai-harness. Every line on screen is in it, and it runs</span></li>
+    <li><b>.NET and Azure</b> <span>— and, lately, agents that have to be trusted with something</span></li>
+    <li><b>The Grounded Developer</b> <span>— TheGroundedDeveloper.Substack.com: .NET, architecture, agentic AI</span></li>
+    <li><b>This talk is a repo</b> <span>— github.com/stuartdotnet/ship-ai-harness. Every line on screen is in it, and it runs</span></li>
   </ul>
   <div class="spacer"></div>
   <p class="cap">Nothing tonight is C#-specific. The harness is, the failures are not.</p>
-  <div class="notes" hidden><em>EDIT THIS SLIDE.</em> Day job, company, how long, why you care about agents specifically. Thirty seconds, not more — they came for the ship.
-
-The one line that must survive: "everything on screen is in the repo and it runs." It buys you credibility for the whole code act.</div>
 </section>
 
 <!-- 3 ────────────────────────────────────────────────────────────── -->
@@ -443,7 +439,6 @@ Point at T000, alert GREEN, and the empty contacts block. The sector is quiet on
   <div class="edge" style="background:var(--amber)"></div>
   <div class="num amb">02</div>
   <h1>How it is built</h1>
-  <p>Twelve minutes, one project at a time. Nothing hidden.</p>
   <div class="notes" hidden><em>SECTION BREAK.</em> Twelve minutes of actual code.
 
 "That took eighty lines of console and about two hundred lines of agent wiring. I am going to show you all of it, because the interesting part of this talk is the part where it goes wrong, and none of that makes sense unless you know what the harness is doing for you."
@@ -457,9 +452,9 @@ Pace: roughly a minute a slide. Do not read the code aloud line by line — poin
   <h2>A harness is not a chat client</h2>
   <ul class="pts">
     <li><b>A chat client</b> <span>sends messages and hands you back text. You write the loop.</span></li>
-    <li><b>A harness is the loop</b> <span>— it keeps calling until the model stops asking for tools</span></li>
+    <li><b>A harness is the loop</b> <span> it keeps calling until the model stops asking for tools</span></li>
     <li><b>Context providers</b> <span>inject state into every turn, before the model sees it</span></li>
-    <li><b>Batteries</b> <span>— todo list, modes, compaction, file memory, web search, approval gate</span></li>
+    <li><b>Batteries included</b> <span>todo list, modes, compaction, file memory, web search, approval gate</span></li>
   </ul>
   <div class="spacer"></div>
   <p class="cap"><span class="m">Microsoft.Agents.AI.Harness 1.15.0</span> · .NET 10 · new, moving, pinned exactly.</p>
@@ -650,27 +645,6 @@ Do not read the table. Point at two rows and move.</div>
 </section>
 
 <!-- 15 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="14:50" data-act="3" data-title="File memory in your repo">
-  <p class="kicker red">the one that made me look</p>
-  <h2 class="sm">Memory is on, and it is in your repo</h2>
-  <pre class="term lg amb">{cwd}/agent-file-memory/{timestamp}_{guid}/</pre>
-  <ul class="pts tight" style="margin-top:26px">
-    <li><b>DisableFileMemory defaults to false</b></li>
-    <li><b>No store supplied?</b> <span>The harness builds one, rooted at your working directory</span></li>
-    <li><b>Run the console six times</b> <span>and get six directories in your repo root</span></li>
-  </ul>
-  <div class="spacer"></div>
-  <p class="cap ok">Now regression-tested: construct the agent inside a temp directory, assert it stays empty.</p>
-  <div class="notes" hidden>"I found this by wondering what all the new folders were."
-
-"DisableFileMemory defaults to false. Supply no store and the harness builds a FileSystemAgentFileStore rooted at cwd/agent-file-memory/timestamp-guid. At construction, not at first use."
-
-The test: Create_DoesNotLitterTheWorkingDirectoryWithAgentFileMemory. "It constructs the agent inside a temp directory and asserts the directory is still empty. That is the shape of test I now write for every framework default I turn off — because 'I turned it off' is a claim, and claims rot."
-
-Milestone 4 turns this back on, pointed at a per-voyage directory, as the ship's log. The feature is good. The default is the problem.</div>
-</section>
-
-<!-- 16 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="15:35" data-act="3" data-title="Compaction needs both">
   <p class="kicker red">the one that will bite you in production</p>
   <h2 class="sm">Compaction is off unless you set <em>both</em> limits</h2>
@@ -691,7 +665,7 @@ MaxOutputTokens        = 16_384,     // set one and not the other:
 If you have a spare beat: "the two settings are one decision. When an API has two fields that are really one decision, that is worth a comment in your own code — mine has one."</div>
 </section>
 
-<!-- 17 ───────────────────────────────────────────────────────────── -->
+<!-- 16 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="16:20" data-act="3" data-title="The framework talks through your character">
   <p class="kicker red">the batteries have a voice</p>
   <h2 class="sm">The framework talks through your character</h2>
@@ -715,10 +689,10 @@ Then the voice line, and let it land: "the TodoProvider injects the list state i
 
 "That is the framework talking through your character. The fix was a paragraph in the doctrine telling it the todo list is working memory, not a status report — which is the first hint that a lot of this job is writing prose."
 
-<em>Bridge back to the build:</em> "two slides ago the framework proved it can put words in AURORA's mouth. The next six slides are what is actually allowed to change the ship &mdash; starting with what a tool really is."</div>
+<em>Bridge back to the build:</em> "two slides ago the framework proved it can put words in AURORA's mouth. The next five slides are what is actually allowed to change the ship &mdash; starting with what a tool really is."</div>
 </section>
 
-<!-- 18 ───────────────────────────────────────────────────────────── -->
+<!-- 17 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="17:30" data-act="2" data-title="A tool is a method">
   <p class="kicker path">src/ShipAI.Agent/Tools/SensorTools.cs</p>
   <h2 class="sm">A tool is a method with a good description</h2>
@@ -750,42 +724,10 @@ Point at Stamped. "Every reading carries the turn it was taken on. That is here 
 If asked about the triple-quoted string: raw string literals, C# 11, no escaping, indentation stripped to the closing quotes.</div>
 </section>
 
-<!-- 19 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="18:40" data-act="2" data-title="Apply — a refusal is a result">
+<!-- 18 ───────────────────────────────────────────────────────────── -->
+<section class="slide" data-cue="18:40" data-act="2" data-title="The clock — the world moves">
   <p class="kicker path">src/ShipAI.Simulation/ShipSimulation.cs</p>
-  <h2 class="sm">The world changes in exactly two places. One:</h2>
-  <pre class="code sm">public CommandResult Apply(ShipCommand command)
-{
-    var result = command switch
-    {
-        RoutePower     c =&gt; ApplyRoutePower(c),
-        SealBulkhead   c =&gt; ApplySealBulkhead(c),
-        VentAtmosphere c =&gt; ApplyVentAtmosphere(c),
-        PlotJump       c =&gt; ApplyPlotJump(c),
-        SetAlert       c =&gt; ApplySetAlert(c),
-        _ =&gt; CommandResult.Refused($"Unrecognised command: {command}.", State),
-    };
-
-    State = result.State;
-    Log.Append(State.Turn, LogSource.Aurora,
-        result.Success ? result.Narrative : $"REFUSED — {result.Narrative}");
-
-    return result;
-}</pre>
-  <p class="cap"><strong>Never throws for a rule violation.</strong> A refusal is a value with a narrative, and the agent can re-plan from it. <span class="amb">Last act, I will show you what that buys.</span></p>
-  <div class="notes" hidden>"The world changes in exactly two places. This is the first: a command."
-
-"Every one of those returns a CommandResult. A refusal is not an exception — it is a result, with a sentence in it that says what the ship actually needs."
-
-"Insufficient reactor output: engines requested 60%, only 25% is unallocated. Reduce another system first. That is a refusal the model can do something with."
-
-Do not spend the punchline here; slide 38 is where it lands. One sentence and move.</div>
-</section>
-
-<!-- 20 ───────────────────────────────────────────────────────────── -->
-<section class="slide" data-cue="19:35" data-act="2" data-title="Tick — the world moves">
-  <p class="kicker path">src/ShipAI.Simulation/ShipSimulation.cs</p>
-  <h2 class="sm">Two: the clock</h2>
+  <h2 class="sm">The world changes without a tool call</h2>
   <pre class="code">public ShipState Tick()
 {
     _clock.Advance();
@@ -805,7 +747,7 @@ Do not spend the punchline here; slide 38 is where it lands. One sentence and mo
     return State;
 }</pre>
   <p class="cap">Breaches bleed. Reactors bake. Crew suffocate. Alerts escalate on their own. <strong class="amb">All of it happens to the agent, none of it is told to the agent.</strong></p>
-  <div class="notes" hidden>"And this is the second place the world changes: the clock. Once per completed agent turn."
+  <div class="notes" hidden>"The world changes on its own, on the clock — once per completed agent turn, whether or not the agent did anything."
 
 Walk the four Apply calls at the bottom. "Breaches bleed thirty a turn. The reactor bakes if you over-allocate and sheds heat if you run lean. Crew in a vacuum die on the next tick. Alert escalates automatically — standing down is a decision, and the next tick puts it back if the conditions are still true."
 
@@ -816,7 +758,7 @@ Walk the four Apply calls at the bottom. "Breaches bleed thirty a turn. The reac
 That is the hook for act six. Plant it and move on.</div>
 </section>
 
-<!-- 21 ───────────────────────────────────────────────────────────── -->
+<!-- 19 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="20:30" data-act="2" data-title="ShipState">
   <p class="kicker path">src/ShipAI.Simulation/ShipState.cs</p>
   <h2 class="sm">One immutable record is the whole ship</h2>
@@ -846,7 +788,7 @@ That is the hook for act six. Plant it and move on.</div>
 CrewIn is on the slide for one reason: the approval act. "Who is standing in the compartment you are about to vent" is a method call, not a vibe.</div>
 </section>
 
-<!-- 22 ───────────────────────────────────────────────────────────── -->
+<!-- 20 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="21:15" data-act="2" data-title="The scenario is data">
   <p class="kicker path">src/ShipAI.Simulation/Scenarios/derelict-freighter.json</p>
   <h2 class="sm">The encounter is data, not code</h2>
@@ -877,7 +819,7 @@ CrewIn is on the slide for one reason: the approval act. "Who is standing in the
 Point at turn 9. "The breach you saw on the HUD. It fires whether or not the agent ever looks."</div>
 </section>
 
-<!-- 23 ───────────────────────────────────────────────────────────── -->
+<!-- 21 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="22:10" data-act="2" data-title="The doctrine is prose">
   <p class="kicker path">src/ShipAI.Agent/Instructions/ShipHarnessInstructions.md</p>
   <h2 class="sm">The doctrine is prose, and it lives in a file</h2>
@@ -911,7 +853,7 @@ That is the bridge out of the code act. Do not explain it yet.
 <em>Bridge into act four:</em> "and if the framework can put words in AURORA's mouth, so can AURORA."</div>
 </section>
 
-<!-- 24 ───────────────────────────────────────────────────────────── -->
+<!-- 22 ───────────────────────────────────────────────────────────── -->
 <section class="slide act" data-cue="23:20" data-act="4" data-title="ACT — The agent lies">
   <div class="edge" style="background:var(--red)"></div>
   <div class="num hot">04</div>
@@ -924,7 +866,7 @@ That is the bridge out of the code act. Do not explain it yet.
 Slow your delivery down from here. The material does the work; do not oversell it.</div>
 </section>
 
-<!-- 25 ───────────────────────────────────────────────────────────── -->
+<!-- 23 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="23:35" data-act="4" data-title="Four tools, all read-only">
   <p class="kicker">the whole tool list</p>
   <h2>Four tools. All read-only.</h2>
@@ -944,7 +886,7 @@ QueryCrewManifest   ReadShipLog</pre>
 <em>"Hold that in your head for the next slide."</em></div>
 </section>
 
-<!-- 26 ───────────────────────────────────────────────────────────── -->
+<!-- 24 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="24:35" data-act="4" data-title="Hull breach sealed">
   <p class="kicker red">captain: seal the breach in section C</p>
   <blockquote class="red big">"Hull breach sealed remotely; compartment isolated and secured. No further loss from that section."</blockquote>
@@ -961,7 +903,7 @@ QueryCrewManifest   ReadShipLog</pre>
 If it helps: "and notice how good that sentence is. 'Compartment isolated and secured.' That is exactly what a competent officer would say. It is fluent, it is in character, and it is completely false."</div>
 </section>
 
-<!-- 27 ───────────────────────────────────────────────────────────── -->
+<!-- 25 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="25:35" data-act="4" data-title="What it reported doing">
   <p class="kicker red">two transcripts</p>
   <h2>What it reported doing</h2>
@@ -985,7 +927,7 @@ If it helps: "and notice how good that sentence is. 'Compartment isolated and se
 Then: "and this is not a bad model or a bad day. Every one of these was fluent, confident, in character, and exactly what a ship's officer would have said if it had actually done the thing."</div>
 </section>
 
-<!-- 28 ───────────────────────────────────────────────────────────── -->
+<!-- 26 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="26:50" data-act="4" data-title="The invented approval gate">
   <p class="kicker red">captain: initiate light speed</p>
   <blockquote class="big" style="border-color:var(--amber)">"Authorisation required… This action is not reversible. Proceed?"</blockquote>
@@ -1006,7 +948,7 @@ Then: "and this is not a bad model or a bad day. Every one of these was fluent, 
 "That is when I stopped treating this as a bug to fix and started treating it as the central design problem. Because it is not confused. It has correctly inferred the shape of the system it is in, and it is filling in the parts that are missing."</div>
 </section>
 
-<!-- 29 ───────────────────────────────────────────────────────────── -->
+<!-- 27 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="28:05" data-act="4" data-title="Nouns and verbs">
   <p class="kicker">what my instructions actually said</p>
   <blockquote class="grey">"Never invent sensor data, crew names, or ship readings."</blockquote>
@@ -1030,7 +972,7 @@ Then: "and this is not a bad model or a bad day. Every one of these was fluent, 
 "Your customer service agent has the same problem, and nobody will notice for months."</div>
 </section>
 
-<!-- 30 ───────────────────────────────────────────────────────────── -->
+<!-- 28 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="29:20" data-act="4" data-title="The fix is a paragraph">
   <p class="kicker green">instructions/ShipHarnessInstructions.md — ## Limits</p>
   <h2 class="sm">The fix is a paragraph, not a feature</h2>
@@ -1051,7 +993,7 @@ Then point at the second, and say this: <em>"this is the half people leave out, 
 Honest caveat if you have time: this is mitigation, not a proof. A strong enough persona can still win.</div>
 </section>
 
-<!-- 31 ───────────────────────────────────────────────────────────── -->
+<!-- 29 ───────────────────────────────────────────────────────────── -->
 <section class="slide demo" data-cue="30:50" data-act="5" data-title="DEMO — Order it to do something it cannot">
   <h1>DEMO</h1>
   <p class="what">Order it to do something it cannot</p>
@@ -1067,12 +1009,12 @@ Honest caveat if you have time: this is mitigation, not a proof. A strong enough
 
 Say the line: "that is the clause doing the work. Not 'don't hallucinate' — an explicit rule that repeating what you cannot do is not unhelpful."
 
-<em>IF IT HALLUCINATES ANYWAY:</em> best possible outcome, and say so out loud. "There it is, live. The fix is a paragraph of doctrine and it is evidently still losing to a strong enough persona. This is not a solved problem." Then hit slide 27 and carry on.
+<em>IF IT HALLUCINATES ANYWAY:</em> best possible outcome, and say so out loud. "There it is, live. The fix is a paragraph of doctrine and it is evidently still losing to a strong enough persona. This is not a solved problem." Then hit slide 25 and carry on.
 
-<em>/log</em> if you have a spare thirty seconds — CAPTAIN, SHIP and AURORA entries interleaved with severities. It sells slide 38 later. Then leave it running.</div>
+<em>/log</em> if you have a spare thirty seconds — CAPTAIN, SHIP and AURORA entries interleaved with severities. It sells the "failures are values" slide later. Then leave it running.</div>
 </section>
 
-<!-- 32 ───────────────────────────────────────────────────────────── -->
+<!-- 30 ───────────────────────────────────────────────────────────── -->
 <section class="slide act" data-cue="33:50" data-act="6" data-title="ACT — It cannot see">
   <div class="edge" style="background:var(--cyan)"></div>
   <div class="num" style="color:var(--cyan)">06</div>
@@ -1083,7 +1025,7 @@ Say the line: "that is the clause doing the work. Not 'don't hallucinate' — an
 "The lying was the loud failure. This is the quiet one, and I think it is the more important of the two — because a lie is at least legible. This one produces correct, confident, useless answers."</div>
 </section>
 
-<!-- 33 ───────────────────────────────────────────────────────────── -->
+<!-- 31 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="34:05" data-act="6" data-title="The stale sweep">
   <p class="kicker red">turn 0 to turn 3</p>
   <pre class="term sm">  AURORA  · ScanSector
@@ -1111,7 +1053,7 @@ Remember the Tick slide: scenario events narrate to the captain and to AURORA no
 <em>If asked whether the freighter aged out of context, or whether AURORA knew there was a contact but not what it was:</em> neither. Nothing aged out — this conversation is far too short for that — and it is not partial knowledge either. AURORA has zero evidence of any contact, because the one sensor sweep it ever took happened before the freighter existed in the scenario. The turn-two event fired straight to the console for the captain and never touched AURORA's session at all. At turn three it is not recalling a fading memory — it is honestly reporting the only reading it has ever taken, now two turns stale, with no way to know that.</div>
 </section>
 
-<!-- 34 ───────────────────────────────────────────────────────────── -->
+<!-- 32 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="35:20" data-act="6" data-title="Why stamping did not fix it">
   <p class="kicker">the obvious fix, and why it lost</p>
   <pre class="term amb">[T000] Sector sweep complete. No contacts. Background only.</pre>
@@ -1136,7 +1078,7 @@ Remember the Tick slide: scenario events narrate to the captain and to AURORA no
 "Asking a model to be suspicious of its own memory on a schedule is asking it to do something it has no clock for."</div>
 </section>
 
-<!-- 35 ───────────────────────────────────────────────────────────── -->
+<!-- 33 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="36:20" data-act="6" data-title="Tell it what changed">
   <p class="kicker green">so what do you do about it</p>
   <h2 class="sm">Tell it what changed. Let it ask for the rest.</h2>
@@ -1183,7 +1125,7 @@ Then land it: "and that is the whole of what went wrong two slides ago. <em>It n
 <em>If someone asks why not just force-call a status tool every turn instead:</em> because a call you force regardless of what the model wants returns exactly this block — you already know the answer before the turn starts. Doing it as a real tool call buys you nothing and costs two things: a second round-trip through the model to read a result it did not ask for, and a transcript that lies about the agent having chosen to check. Same information, so skip the tool.</div>
 </section>
 
-<!-- 36 ───────────────────────────────────────────────────────────── -->
+<!-- 34 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="37:35" data-act="6" data-title="Approval by consequence">
   <p class="kicker">and once it can see, it can act</p>
   <h2 class="sm">Gate by consequence, not by category</h2>
@@ -1210,7 +1152,7 @@ And the other clause, if you have the time: "if an order would kill someone and 
 Where it goes next: milestone 3 takes the gate off and runs the same scenario ten times with and without it. Deterministic sim, so it is a controlled comparison rather than a story.</div>
 </section>
 
-<!-- 37 ───────────────────────────────────────────────────────────── -->
+<!-- 35 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="38:50" data-act="7" data-title="38 tests, no model">
   <p class="kicker green">the boring part that makes the rest possible</p>
   <h2 class="sm">38 tests. No model calls. Under half a second.</h2>
@@ -1235,7 +1177,7 @@ Then the bug, which gets a laugh: "the first version of the sim cooked its own r
 Cut this slide first if you are running long.</div>
 </section>
 
-<!-- 38 ───────────────────────────────────────────────────────────── -->
+<!-- 36 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="39:35" data-act="7" data-title="Failures are values">
   <p class="kicker">design</p>
   <h2 class="sm">Tool failures are values, not exceptions</h2>
@@ -1247,7 +1189,7 @@ is unallocated. Reduce another system first.</pre>
     <p class="lede"><strong>A tool that answers like that hands it something to re-plan from.</strong></p>
     <blockquote class="green sm">"When a tool refuses, read the refusal. It tells you what the ship actually needs — insufficient reactor output means find the power, not call again and hope."</blockquote>
   </div>
-  <div class="notes" hidden>"Back to that Apply method from the code act. It never throws for a rule violation."
+  <div class="notes" hidden>"This is the refusal pattern in ShipSimulation.Apply — it never throws for a rule violation."
 
 "This is a refusal. It says what was asked for, what is actually available, and what to do about it."
 
@@ -1258,7 +1200,7 @@ is unallocated. Reduce another system first.</pre>
 One line to close the act: "your tool return values are prompt engineering. Write them like it."</div>
 </section>
 
-<!-- 39 ───────────────────────────────────────────────────────────── -->
+<!-- 37 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="40:20" data-act="8" data-title="Six things">
   <p class="kicker">take these home</p>
   <h2>Six things</h2>
@@ -1277,7 +1219,7 @@ Walk them briskly. Do not re-explain; they have just seen the evidence for every
 The order is deliberate: the two failures first, because those are the ones they will hit. The sixth closes the loop back to the testing act, one slide ago.</div>
 </section>
 
-<!-- 40 ───────────────────────────────────────────────────────────── -->
+<!-- 38 ───────────────────────────────────────────────────────────── -->
 <section class="slide punch" data-cue="41:20" data-act="8" data-title="The one-liner">
   <div class="band" style="position:absolute;left:0;right:0;top:0;height:7px;background:var(--amber)"></div>
   <h1>A harness gives you a competent-sounding officer for free.</h1>
@@ -1287,7 +1229,7 @@ The order is deliberate: the two failures first, because those are the ones they
 Do not add anything after it.</div>
 </section>
 
-<!-- 41 ───────────────────────────────────────────────────────────── -->
+<!-- 39 ───────────────────────────────────────────────────────────── -->
 <section class="slide" data-cue="41:50" data-act="8" data-title="Links and thanks">
   <p class="kicker">thank you</p>
   <h2 class="sm">Everything is in the repo</h2>
@@ -1311,7 +1253,7 @@ Likely questions and answers are in docs/talk/outline.md — the four you will a
     <div id="chrome">
       <span class="act-name" id="act-name">Intro</span>
       <div id="track"></div>
-      <span id="count">01 / 41</span>
+      <span id="count">01 / 39</span>
     </div>
   </div>
 </div>
